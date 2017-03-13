@@ -1,0 +1,6 @@
+[package]
+name = "gps-share"
+version = "0.1.0"
+authors = ["Zeeshan Ali <zeenix@gmail.com>"]
+
+[dependencies]
