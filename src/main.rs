@@ -21,8 +21,14 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
+mod gps;
+
 extern crate serial;
 
+use gps::GPS;
+
 fn main() {
+    let gps = GPS::new("/dev/ttyS0").unwrap();
+
     println!("Hello, world!");
 }
