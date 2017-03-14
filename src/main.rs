@@ -21,6 +21,8 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
+extern crate serial;
+
 fn main() {
     println!("Hello, world!");
 }
