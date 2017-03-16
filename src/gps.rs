@@ -29,12 +29,8 @@ pub struct GPS {
 
 impl GPS {
     pub fn new(path: &str) -> Result<Self, serial::Error> {
-        match serial::open(path) {
-            Ok(p) => {
-                Ok(GPS { port: p })
-            },
-
-            Err(e) => Err(e)
-        }
+        serial::open(path).map(|p| {
+            GPS { port: p }
+        })
     }
 }
