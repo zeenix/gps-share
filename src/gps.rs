@@ -22,6 +22,7 @@
  */
 
 use serial;
+use serial::prelude::*;
 
 pub struct GPS {
     port: serial::SystemPort,
@@ -29,8 +30,24 @@ pub struct GPS {
 
 impl GPS {
     pub fn new(path: &str) -> Result<Self, serial::Error> {
-        serial::open(path).map(|p| {
-            GPS { port: p }
-        })
+        match serial::open(path) {
+            Ok(mut port) => {
+                try!(port.reconfigure(& GPS::reconfigure));
+
+                Ok(GPS { port: port })
+            },
+
+            Err(err) => Err(err)
+        }
+    }
+
+    fn reconfigure(settings: & mut serial::SerialPortSettings) -> serial::Result<()> {
+        try!(settings.set_baud_rate(serial::Baud38400)); // FIXME: Need to be configurable
+        settings.set_char_size(serial::Bits8);
+        settings.set_parity(serial::ParityNone);
+        settings.set_stop_bits(serial::Stop1);
+        settings.set_flow_control(serial::FlowNone);
+
+        Ok(())
     }
 }
