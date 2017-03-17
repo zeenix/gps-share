@@ -67,6 +67,8 @@ impl Server {
 
                 Err(e) => {
                     println!("Error writing to client: {}", e);
+
+                    break;
                 }
             }
         }
