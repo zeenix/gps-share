@@ -22,17 +22,16 @@
  */
 
 mod gps;
+mod server;
 
 extern crate serial;
 
 use gps::GPS;
+use server::Server;
 
 fn main() {
-    let mut gps = GPS::new("/dev/ttyUSB0").unwrap();
-    let mut buffer = String::new();
+    let gps = GPS::new("/dev/ttyUSB0").unwrap();
+    let mut server = Server::new(gps).unwrap();
 
-    loop {
-        gps.read_line(& mut buffer).unwrap();
-        println!("{}", buffer);
-    }
+    server.run();
 }
