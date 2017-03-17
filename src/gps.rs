@@ -24,9 +24,12 @@
 use serial;
 use serial::prelude::*;
 use std::time::Duration;
+use std::io;
+use std::io::BufReader;
+use std::io::BufRead;
 
 pub struct GPS {
-    port: serial::SystemPort,
+    reader: BufReader<serial::SystemPort>,
 }
 
 impl GPS {
@@ -35,7 +38,11 @@ impl GPS {
         port.reconfigure(& GPS::reconfigure)?;
         port.set_timeout(Duration::from_millis(1000))?;
 
-        Ok(GPS { port: port })
+        Ok(GPS { reader: BufReader::new(port) })
+    }
+
+    pub fn read_line(& mut self, buffer: & mut String) -> io::Result<usize> {
+        self.reader.read_line(buffer)
     }
 
     fn reconfigure(settings: & mut serial::SerialPortSettings) -> serial::Result<()> {
