@@ -23,6 +23,7 @@
 
 use serial;
 use serial::prelude::*;
+use std::time::Duration;
 
 pub struct GPS {
     port: serial::SystemPort,
@@ -32,6 +33,7 @@ impl GPS {
     pub fn new(path: &str) -> Result<Self, serial::Error> {
         let mut port = serial::open(path)?;
         port.reconfigure(& GPS::reconfigure)?;
+        port.set_timeout(Duration::from_millis(1000))?;
 
         Ok(GPS { port: port })
     }
