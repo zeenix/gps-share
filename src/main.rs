@@ -28,7 +28,11 @@ extern crate serial;
 use gps::GPS;
 
 fn main() {
-    let gps = GPS::new("/dev/ttyS0").unwrap();
+    let mut gps = GPS::new("/dev/ttyUSB0").unwrap();
+    let mut buffer = String::new();
 
-    println!("Hello, world!");
+    loop {
+        gps.read_line(& mut buffer).unwrap();
+        println!("{}", buffer);
+    }
 }
