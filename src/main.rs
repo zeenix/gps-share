@@ -30,7 +30,19 @@ use gps::GPS;
 use server::Server;
 
 fn main() {
-    let gps = GPS::new("/dev/ttyUSB0").unwrap();
+    let mut args = std::env::args();
+    if args.len() == 1 {
+        let arg0 = match args.nth(0) {
+            Some(s) => s,
+            None => String::from("gps-share"),
+        };
+        println!("Usage: {} DEVICE_PATH", arg0);
+
+        return;
+    }
+
+    let dev_path = args.nth(1).unwrap();
+    let gps = GPS::new(dev_path.as_str()).unwrap();
     let mut server = Server::new(gps).unwrap();
 
     server.run();
