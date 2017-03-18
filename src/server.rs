@@ -33,9 +33,9 @@ pub struct Server {
 
 impl Server {
     pub fn new(gps: gps::GPS) -> io::Result<Self> {
-        let listener = TcpListener::bind(("127.0.0.1", 0))?;
+        let listener = TcpListener::bind(("0.0.0.0", 0))?;
         let addr = listener.local_addr()?;
-        println!("TCP server bound to {} at port {}", addr.ip(), addr.port());
+        println!("TCP server bound to port {} on all interfaces", addr.port());
 
         Ok(Server { gps:      gps,
                     listener: listener })
