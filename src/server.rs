@@ -43,7 +43,7 @@ impl Server {
         loop {
             match self.listener.accept() {
                 Ok((mut stream, addr)) => {
-                    println!("Connection from {:?}", addr);
+                    println!("Connection from {}", addr.ip());
                     self.handle_client(& mut stream);
                 },
 
