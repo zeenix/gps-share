@@ -1,1 +1,8 @@
+dist: trusty
+
 language: rust
+
+addons:
+  apt:
+    packages:
+      - libdbus-1-dev

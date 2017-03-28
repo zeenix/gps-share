@@ -23,8 +23,12 @@
 
 mod gps;
 mod server;
+mod avahi;
 
 extern crate serial;
+extern crate dbus;
+#[macro_use]
+extern crate dbus_macros;
 
 use gps::GPS;
 use server::Server;
@@ -45,5 +49,5 @@ fn main() {
     let gps = GPS::new(dev_path.as_str()).unwrap();
     let mut server = Server::new(gps).unwrap();
 
-    server.run();
+    server.run().unwrap();
 }
