@@ -5,3 +5,5 @@ authors = ["Zeeshan Ali <zeenix@gmail.com>"]
 
 [dependencies]
 serial = "0.3"
+dbus = "^0.5"
+dbus-macros = { git = "https://github.com/antoyo/dbus-macros-rs", branch = "master" }
