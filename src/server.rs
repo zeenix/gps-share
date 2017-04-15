@@ -26,11 +26,12 @@ use avahi;
 use std::io;
 use std::net::{TcpListener, TcpStream};
 use std::io::Write;
+use std::rc::Rc;
 
 pub struct Server<'a> {
     gps: gps::GPS,
     listener: TcpListener,
-    avahi: avahi::Avahi<'a>,
+    avahi: Rc<avahi::Avahi<'a>>,
 }
 
 impl<'a> Server<'a> {
@@ -40,15 +41,16 @@ impl<'a> Server<'a> {
 
         Ok(Server { gps:      gps,
                     listener: listener,
-                    avahi:    avahi })
+                    avahi:    Rc::new(avahi) })
     }
 
-    pub fn run(& mut self) -> io::Result<()> {
+    pub fn run(&mut self) -> io::Result<()> {
         let addr = self.listener.local_addr()?;
         let port = addr.port();
         println!("TCP server bound to port {} on all interfaces", port);
+        let avahi = self.avahi.clone();
 
-        let entry_group = match self.avahi.publish(port) {
+        let entry_group = match avahi.publish(port) {
             Ok(group) => Some(group),
             Err(e) => {
                 println!("Failed to publish service on Avahi: {}", e);
@@ -60,7 +62,7 @@ impl<'a> Server<'a> {
             match self.listener.accept() {
                 Ok((mut stream, addr)) => {
                     println!("Connection from {}", addr.ip());
-                    self.handle_client(& mut stream);
+                    self.handle_client(&mut stream);
                 },
 
                 Err(e) => {
