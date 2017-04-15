@@ -40,16 +40,26 @@ dbus_interface!("org.freedesktop.Avahi.EntryGroup", interface EntryGroup {
     fn commit();
 });
 
-pub fn publish(port: u16) -> Result<(),dbus::Error> {
-    let server = Server::new("org.freedesktop.Avahi", "/", dbus::BusType::System);
+pub struct Avahi<'a> {
+    server: Server<'a>,
+}
 
-    // FIXME: Make this async when it's possible
-    let group_path = server.entry_group_new()?;
-    println!("group: {}", group_path);
+impl<'a> Avahi<'a> {
+    pub fn new() -> Self {
+        let server: Server = Server::new("org.freedesktop.Avahi", "/", dbus::BusType::System);
+   
+        Avahi { server: server }
+    }
 
-    let group = EntryGroup::new("org.freedesktop.Avahi", group_path, dbus::BusType::System);
-    group.add_service(-1, -1, 0, "gps-share", "_nmea-0183._tcp", "", "", port, "")?;
-    group.commit()?;
+    pub fn publish(&self, port: u16) -> Result<(),dbus::Error> {
+        // FIXME: Make this async when it's possible
+        let group_path = self.server.entry_group_new()?;
+        println!("group: {}", group_path);
 
-    Ok(())
+        let group = EntryGroup::new("org.freedesktop.Avahi", group_path, dbus::BusType::System);
+        group.add_service(-1, -1, 0, "gps-share", "_nmea-0183._tcp", "", "", port, "")?;
+        group.commit()?;
+
+        Ok(())
+    }
 }

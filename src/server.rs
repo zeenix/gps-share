@@ -27,17 +27,20 @@ use std::io;
 use std::net::{TcpListener, TcpStream};
 use std::io::Write;
 
-pub struct Server {
+pub struct Server<'a> {
     gps: gps::GPS,
     listener: TcpListener,
+    avahi: avahi::Avahi<'a>,
 }
 
-impl Server {
+impl<'a> Server<'a> {
     pub fn new(gps: gps::GPS) -> io::Result<Self> {
         let listener = TcpListener::bind(("0.0.0.0", 0))?;
+        let avahi = avahi::Avahi::new();
 
         Ok(Server { gps:      gps,
-                    listener: listener })
+                    listener: listener,
+                    avahi:    avahi })
     }
 
     pub fn run(& mut self) -> io::Result<()> {
@@ -45,7 +48,7 @@ impl Server {
         let port = addr.port();
         println!("TCP server bound to port {} on all interfaces", port);
 
-        if let Err(e) = avahi::publish(port) {
+        if let Err(e) = self.avahi.publish(port) {
             println!("Failed to publish service on Avahi: {}", e);
         };
 
