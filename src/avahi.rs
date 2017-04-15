@@ -51,7 +51,7 @@ impl<'a> Avahi<'a> {
         Avahi { server: server }
     }
 
-    pub fn publish(&self, port: u16) -> Result<(),dbus::Error> {
+    pub fn publish(&self, port: u16) -> Result<EntryGroup,dbus::Error> {
         // FIXME: Make this async when it's possible
         let group_path = self.server.entry_group_new()?;
         println!("group: {}", group_path);
@@ -60,6 +60,6 @@ impl<'a> Avahi<'a> {
         group.add_service(-1, -1, 0, "gps-share", "_nmea-0183._tcp", "", "", port, "")?;
         group.commit()?;
 
-        Ok(())
+        Ok(group)
     }
 }

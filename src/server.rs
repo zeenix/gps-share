@@ -48,8 +48,12 @@ impl<'a> Server<'a> {
         let port = addr.port();
         println!("TCP server bound to port {} on all interfaces", port);
 
-        if let Err(e) = self.avahi.publish(port) {
-            println!("Failed to publish service on Avahi: {}", e);
+        let entry_group = match self.avahi.publish(port) {
+            Ok(group) => Some(group),
+            Err(e) => {
+                println!("Failed to publish service on Avahi: {}", e);
+                None
+            }
         };
 
         loop {
