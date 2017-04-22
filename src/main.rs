@@ -24,6 +24,7 @@
 mod gps;
 mod server;
 mod avahi;
+mod client_handler;
 
 extern crate serial;
 extern crate dbus;

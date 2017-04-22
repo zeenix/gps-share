@@ -23,12 +23,14 @@
 
 use gps;
 use avahi;
+use client_handler::ClientHandler;
 use std::io;
 use std::net::{TcpListener, TcpStream};
-use std::io::Write;
+use std::sync::{Arc, Mutex};
+use std::thread;
 
 pub struct Server {
-    gps: gps::GPS,
+    gps: Arc<Mutex<gps::GPS>>,
     listener: TcpListener,
     avahi: avahi::Avahi,
 }
@@ -38,7 +40,7 @@ impl Server {
         let listener = TcpListener::bind(("0.0.0.0", 0))?;
         let avahi = avahi::Avahi::new();
 
-        Ok(Server { gps:      gps,
+        Ok(Server { gps:      Arc::new(Mutex::new(gps)),
                     listener: listener,
                     avahi:    avahi })
     }
@@ -52,35 +54,33 @@ impl Server {
             println!("Failed to publish service on Avahi: {}", e);
         };
 
+        let streams: Vec<TcpStream> = vec!();
+        let streams_arc = Arc::new(Mutex::new(streams));
+
         loop {
             match self.listener.accept() {
-                Ok((mut stream, addr)) => {
+                Ok((stream, addr)) => {
                     println!("Connection from {}", addr.ip());
-                    self.handle_client(& mut stream);
+
+                    let launch_handler;
+                    {
+                        // unwrap cause this shouldn't fail, should it?
+                        let mut streams = streams_arc.lock().unwrap();
+                        streams.push(stream);
+                        launch_handler = streams.len() == 1;
+                    }
+
+                    if launch_handler {
+                        let handler = ClientHandler::new(self.gps.clone(), streams_arc.clone());
+
+                        thread::spawn(move || {
+                            handler.handle();
+                        });
+                    }
                 },
 
                 Err(e) => {
                     println!("Connect from client failed: {}", e);
-                }
-            }
-        }
-    }
-
-    fn handle_client(& mut self, stream: & mut TcpStream) {
-        let mut buffer = String::new();
-
-        loop {
-            self.gps.read_line(& mut buffer).unwrap();
-
-            match stream.write(buffer.as_bytes()) {
-                Ok(0) => break,
-
-                Ok(_) => {},
-
-                Err(e) => {
-                    println!("Error writing to client: {}", e);
-
-                    break;
                 }
             }
         }
