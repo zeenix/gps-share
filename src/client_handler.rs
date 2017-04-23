@@ -27,26 +27,26 @@ use std::io::Write;
 use std::sync::{Arc, Mutex};
 
 pub struct ClientHandler {
-    gps_arc: Arc<Mutex<gps::GPS>>,
-    streams_arc: Arc<Mutex<Vec<TcpStream>>>,
+    gps: Arc<Mutex<gps::GPS>>,
+    streams: Arc<Mutex<Vec<TcpStream>>>,
 }
 
 impl ClientHandler {
-    pub fn new(gps_arc:     Arc<Mutex<gps::GPS>>,
-               streams_arc: Arc<Mutex<Vec<TcpStream>>>) -> Self {
-        ClientHandler { gps_arc:      gps_arc,
-                        streams_arc:  streams_arc }
+    pub fn new(gps:     Arc<Mutex<gps::GPS>>,
+               streams: Arc<Mutex<Vec<TcpStream>>>) -> Self {
+        ClientHandler { gps:      gps,
+                        streams:  streams }
     }
 
     pub fn handle(mut self) {
         let mut buffer = String::new();
 
         loop {
-            self.gps_arc.lock().unwrap().read_line(& mut buffer).unwrap();
+            self.gps.lock().unwrap().read_line(& mut buffer).unwrap();
 
             let to_delete = self.write_to_clients(& buffer);
 
-            let mut streams = self.streams_arc.lock().unwrap();
+            let mut streams = self.streams.lock().unwrap();
             for i in to_delete.iter().rev() {
                 streams.remove(*i);
             }
@@ -60,7 +60,7 @@ impl ClientHandler {
     fn write_to_clients(& mut self, buffer: & String) -> Vec<usize> {
         let mut to_delete: Vec<usize> = vec!();
 
-        let streams = self.streams_arc.lock().unwrap();
+        let streams = self.streams.lock().unwrap();
         for i in 0..streams.len() {
             let mut stream = &streams[i];
 
