@@ -74,6 +74,7 @@ impl ClientHandler {
                 Ok(_) => {},
 
                 Err(e) => {
+                    println!("Failed to write NMEA to client: {}", e);
                     to_delete.push(i);
 
                     continue;
