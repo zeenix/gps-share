@@ -21,37 +21,8 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use serial;
-use serial::prelude::*;
-use std::time::Duration;
 use std::io;
-use std::io::BufReader;
-use std::io::BufRead;
 
-pub struct GPS {
-    reader: BufReader<serial::SystemPort>,
-}
-
-impl GPS {
-    pub fn new(path: &str) -> Result<Self, serial::Error> {
-        let mut port = serial::open(path)?;
-        port.reconfigure(& GPS::reconfigure)?;
-        port.set_timeout(Duration::from_millis(1000))?;
-
-        Ok(GPS { reader: BufReader::new(port) })
-    }
-
-    pub fn read_line(& mut self, buffer: & mut String) -> io::Result<usize> {
-        self.reader.read_line(buffer)
-    }
-
-    fn reconfigure(settings: & mut serial::SerialPortSettings) -> serial::Result<()> {
-        settings.set_baud_rate(serial::Baud38400)?; // FIXME: Need to be configurable
-        settings.set_char_size(serial::Bits8);
-        settings.set_parity(serial::ParityNone);
-        settings.set_stop_bits(serial::Stop1);
-        settings.set_flow_control(serial::FlowNone);
-
-        Ok(())
-    }
+pub trait GPS : Send {
+    fn read_line(& mut self, buffer: & mut String) -> io::Result<usize>;
 }

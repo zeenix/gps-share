@@ -29,14 +29,14 @@ use std::net::{TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-pub struct Server {
-    gps: Arc<Mutex<gps::GPS>>,
+pub struct Server<G> {
+    gps: Arc<Mutex<G>>,
     listener: TcpListener,
     avahi: avahi::Avahi,
 }
 
-impl Server {
-    pub fn new(gps: gps::GPS) -> io::Result<Self> {
+impl<G: gps::GPS + 'static> Server<G> {
+    pub fn new(gps: G) -> io::Result<Self> {
         let listener = TcpListener::bind(("0.0.0.0", 0))?;
         let avahi = avahi::Avahi::new();
 

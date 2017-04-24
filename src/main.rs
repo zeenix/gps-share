@@ -21,6 +21,7 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
+mod rs232;
 mod gps;
 mod server;
 mod avahi;
@@ -35,7 +36,7 @@ extern crate core;
 extern crate chan;
 extern crate chan_signal;
 
-use gps::GPS;
+use rs232::RS232;
 use server::Server;
 use std::thread;
 
@@ -82,7 +83,7 @@ fn main() {
 }
 
 fn run(_sdone: chan::Sender<()>, dev_path: String) {
-    let gps = GPS::new(dev_path.as_str()).unwrap();
+    let gps = RS232::new(dev_path.as_str()).unwrap();
     let mut server = Server::new(gps).unwrap();
     server.run().unwrap();
 }
