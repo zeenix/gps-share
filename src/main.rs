@@ -37,6 +37,9 @@ extern crate chan_signal;
 
 use gps::GPS;
 use server::Server;
+use std::thread;
+
+use chan_signal::Signal;
 
 fn main() {
     let mut args = std::env::args();
@@ -51,8 +54,35 @@ fn main() {
     }
 
     let dev_path = args.nth(1).unwrap();
+
+    let signal = chan_signal::notify(&[Signal::INT, Signal::TERM]);
+    let (sdone, rdone) = chan::sync(0);
+
+    thread::spawn(move || run(sdone, dev_path));
+
+    chan_select! {
+        signal.recv() -> signal => {
+            match signal {
+                Some(Signal::INT) => {
+                    println!("Interrupt from keyboard. Exitting..");
+                },
+
+                Some(Signal::TERM) => {
+                    println!("Kill signal received. Exitting..");
+                },
+
+                _ => (),
+            }
+        },
+
+        rdone.recv() => {
+            println!("Program completed normally.");
+        }
+    }
+}
+
+fn run(_sdone: chan::Sender<()>, dev_path: String) {
     let gps = GPS::new(dev_path.as_str()).unwrap();
     let mut server = Server::new(gps).unwrap();
-
     server.run().unwrap();
 }
