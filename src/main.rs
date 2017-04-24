@@ -31,6 +31,9 @@ extern crate dbus;
 #[macro_use]
 extern crate dbus_macros;
 extern crate core;
+#[macro_use]
+extern crate chan;
+extern crate chan_signal;
 
 use gps::GPS;
 use server::Server;
