@@ -2,6 +2,10 @@ dist: trusty
 
 language: rust
 
+branches:
+    except:
+        - wip/*
+
 addons:
   apt:
     packages:
