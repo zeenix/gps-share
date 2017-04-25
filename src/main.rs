@@ -37,6 +37,7 @@ extern crate core;
 extern crate chan;
 extern crate chan_signal;
 
+use gps::GPS;
 use rs232::RS232;
 use stdin_gps::StdinGPS;
 use server::Server;
@@ -88,15 +89,19 @@ fn run(_sdone: chan::Sender<()>, dev_path: String) {
     match dev_path.as_ref() {
         "-" => {
             let stdin_gps = StdinGPS::new();
-            let mut server = Server::new(stdin_gps).unwrap();
 
-            server.run().unwrap();
+            run_server(stdin_gps);
         },
         _   => {
             let rs232 = RS232::new(dev_path.as_str()).unwrap();
-            let mut server = Server::new(rs232).unwrap();
 
-            server.run().unwrap();
+            run_server(rs232);
         },
     };
+}
+
+fn run_server<G: GPS>(gps: G) {
+    let mut server = Server::new(gps).unwrap();
+
+    server.run().unwrap();
 }
