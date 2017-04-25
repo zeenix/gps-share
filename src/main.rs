@@ -26,6 +26,7 @@ mod gps;
 mod server;
 mod avahi;
 mod client_handler;
+mod stdin_gps;
 
 extern crate serial;
 extern crate dbus;
@@ -37,6 +38,7 @@ extern crate chan;
 extern crate chan_signal;
 
 use rs232::RS232;
+use stdin_gps::StdinGPS;
 use server::Server;
 use std::thread;
 
@@ -83,7 +85,18 @@ fn main() {
 }
 
 fn run(_sdone: chan::Sender<()>, dev_path: String) {
-    let gps = RS232::new(dev_path.as_str()).unwrap();
-    let mut server = Server::new(gps).unwrap();
-    server.run().unwrap();
+    match dev_path.as_ref() {
+        "-" => {
+            let stdin_gps = StdinGPS::new();
+            let mut server = Server::new(stdin_gps).unwrap();
+
+            server.run().unwrap();
+        },
+        _   => {
+            let rs232 = RS232::new(dev_path.as_str()).unwrap();
+            let mut server = Server::new(rs232).unwrap();
+
+            server.run().unwrap();
+        },
+    };
 }
