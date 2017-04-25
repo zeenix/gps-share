@@ -23,6 +23,6 @@
 
 use std::io;
 
-pub trait GPS : Send {
+pub trait GPS : Send + 'static {
     fn read_line(& mut self, buffer: & mut String) -> io::Result<usize>;
 }

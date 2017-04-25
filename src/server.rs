@@ -35,7 +35,7 @@ pub struct Server<G> {
     avahi: avahi::Avahi,
 }
 
-impl<G: gps::GPS + 'static> Server<G> {
+impl<G: gps::GPS> Server<G> {
     pub fn new(gps: G) -> io::Result<Self> {
         let listener = TcpListener::bind(("0.0.0.0", 0))?;
         let avahi = avahi::Avahi::new();
