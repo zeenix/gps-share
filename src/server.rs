@@ -48,7 +48,8 @@ impl<G: gps::GPS> Server<G> {
     pub fn run(& mut self) -> io::Result<()> {
         let addr = self.listener.local_addr()?;
         let port = addr.port();
-        println!("TCP server bound to port {} on all interfaces", port);
+        println!("TCP server bound on all interfaces");
+        println!("Port: {}", port);
 
         if let Err(e) = self.avahi.publish(port) {
             println!("Failed to publish service on Avahi: {}", e);
