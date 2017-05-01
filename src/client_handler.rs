@@ -45,6 +45,7 @@ impl<G: gps::GPS> ClientHandler<G> {
             self.gps.lock().unwrap().read_line(& mut buffer).unwrap();
 
             let to_delete = self.write_to_clients(& buffer);
+            buffer.clear();
 
             let mut streams = self.streams.lock().unwrap();
             for i in to_delete.iter().rev() {
