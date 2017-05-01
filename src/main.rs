@@ -54,14 +54,20 @@ fn main() {
                           .about("Utility to share your GPS device on local network.")
                           .arg(Arg::with_name("device")
                               .help("GPS device node"))
+                          .arg(Arg::with_name("disable-announce")
+                              .short("a")
+                              .long("--disable-announce")
+                              .help("Disable announcing through Avahi"))
                           .get_matches();
+
+    let announce = !matches.is_present("disable-announce");
 
     let dev_path = matches.value_of("device").unwrap().to_string();
 
     let signal = chan_signal::notify(&[Signal::INT, Signal::TERM]);
     let (sdone, rdone) = chan::sync(0);
 
-    thread::spawn(move || run(sdone, dev_path));
+    thread::spawn(move || run(sdone, dev_path, announce));
 
     chan_select! {
         signal.recv() -> signal => {
@@ -84,23 +90,23 @@ fn main() {
     }
 }
 
-fn run(_sdone: chan::Sender<()>, dev_path: String) {
+fn run(_sdone: chan::Sender<()>, dev_path: String, announce: bool) {
     match dev_path.as_ref() {
         "-" => {
             let stdin_gps = StdinGPS::new();
 
-            run_server(stdin_gps);
+            run_server(stdin_gps, announce);
         },
         _   => {
             let rs232 = RS232::new(dev_path.as_str()).unwrap();
 
-            run_server(rs232);
+            run_server(rs232, announce);
         },
     };
 }
 
-fn run_server<G: GPS>(gps: G) {
-    let mut server = Server::new(gps).unwrap();
+fn run_server<G: GPS>(gps: G, announce: bool) {
+    let mut server = Server::new(gps, announce).unwrap();
 
     server.run().unwrap();
 }

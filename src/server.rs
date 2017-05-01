@@ -32,13 +32,18 @@ use std::thread;
 pub struct Server<G> {
     gps: Arc<Mutex<G>>,
     listener: TcpListener,
-    avahi: avahi::Avahi,
+    avahi: Option<avahi::Avahi>,
 }
 
 impl<G: gps::GPS> Server<G> {
-    pub fn new(gps: G) -> io::Result<Self> {
+    pub fn new(gps: G, announce: bool) -> io::Result<Self> {
         let listener = TcpListener::bind(("0.0.0.0", 0))?;
-        let avahi = avahi::Avahi::new();
+
+        let avahi = if announce {
+            Some(avahi::Avahi::new())
+        } else {
+            None
+        };
 
         Ok(Server { gps:      Arc::new(Mutex::new(gps)),
                     listener: listener,
@@ -51,8 +56,10 @@ impl<G: gps::GPS> Server<G> {
         println!("TCP server bound on all interfaces");
         println!("Port: {}", port);
 
-        if let Err(e) = self.avahi.publish(port) {
-            println!("Failed to publish service on Avahi: {}", e);
+        if let Some(ref avahi) = self.avahi {
+            if let Err(e) = avahi.publish(port) {
+                println!("Failed to publish service on Avahi: {}", e);
+            };
         };
 
         let streams: Vec<TcpStream> = vec!();
