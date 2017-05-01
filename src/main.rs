@@ -36,6 +36,7 @@ extern crate core;
 #[macro_use]
 extern crate chan;
 extern crate chan_signal;
+extern crate clap;
 
 use gps::GPS;
 use rs232::RS232;
@@ -44,20 +45,18 @@ use server::Server;
 use std::thread;
 
 use chan_signal::Signal;
+use clap::{Arg, App};
 
 fn main() {
-    let mut args = std::env::args();
-    if args.len() == 1 {
-        let arg0 = match args.nth(0) {
-            Some(s) => s,
-            None => String::from("gps-share"),
-        };
-        println!("Usage: {} DEVICE_PATH", arg0);
+    let matches = App::new("GPS Share")
+                          .version("0.1")
+                          .author("Zeeshan Ali <zeeshanak@gnome.org>")
+                          .about("Utility to share your GPS device on local network.")
+                          .arg(Arg::with_name("device")
+                              .help("GPS device node"))
+                          .get_matches();
 
-        return;
-    }
-
-    let dev_path = args.nth(1).unwrap();
+    let dev_path = matches.value_of("device").unwrap().to_string();
 
     let signal = chan_signal::notify(&[Signal::INT, Signal::TERM]);
     let (sdone, rdone) = chan::sync(0);
