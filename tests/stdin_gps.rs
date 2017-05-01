@@ -28,6 +28,7 @@ use std::net::TcpStream;
 #[test]
 fn test_stdin_gps() {
     let mut child = Command::new("target/debug/gps-share")
+                        .arg("-a")
                         .arg("-")
                         .stdin(Stdio::piped())
                         .stdout(Stdio::piped())
