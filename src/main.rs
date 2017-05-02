@@ -27,6 +27,7 @@ mod server;
 mod avahi;
 mod client_handler;
 mod stdin_gps;
+mod cmdline_config;
 
 extern crate serial;
 extern crate dbus;
@@ -42,32 +43,18 @@ use gps::GPS;
 use rs232::RS232;
 use stdin_gps::StdinGPS;
 use server::Server;
+use cmdline_config::CmdlineConfig;
 use std::thread;
 
 use chan_signal::Signal;
-use clap::{Arg, App};
 
 fn main() {
-    let matches = App::new("GPS Share")
-                          .version("0.1")
-                          .author("Zeeshan Ali <zeeshanak@gnome.org>")
-                          .about("Utility to share your GPS device on local network.")
-                          .arg(Arg::with_name("device")
-                              .help("GPS device node"))
-                          .arg(Arg::with_name("disable-announce")
-                              .short("a")
-                              .long("--disable-announce")
-                              .help("Disable announcing through Avahi"))
-                          .get_matches();
-
-    let announce = !matches.is_present("disable-announce");
-
-    let dev_path = matches.value_of("device").unwrap().to_string();
+    let config = CmdlineConfig::new();
 
     let signal = chan_signal::notify(&[Signal::INT, Signal::TERM]);
     let (sdone, rdone) = chan::sync(0);
 
-    thread::spawn(move || run(sdone, dev_path, announce));
+    thread::spawn(move || run(sdone, config));
 
     chan_select! {
         signal.recv() -> signal => {
@@ -90,23 +77,23 @@ fn main() {
     }
 }
 
-fn run(_sdone: chan::Sender<()>, dev_path: String, announce: bool) {
-    match dev_path.as_ref() {
+fn run(_sdone: chan::Sender<()>, config: CmdlineConfig) {
+    match config.dev_path.as_ref() {
         "-" => {
             let stdin_gps = StdinGPS::new();
 
-            run_server(stdin_gps, announce);
+            run_server(stdin_gps, config);
         },
         _   => {
-            let rs232 = RS232::new(dev_path.as_str()).unwrap();
+            let rs232 = RS232::new(config.dev_path.as_str()).unwrap();
 
-            run_server(rs232, announce);
+            run_server(rs232, config);
         },
     };
 }
 
-fn run_server<G: GPS>(gps: G, announce: bool) {
-    let mut server = Server::new(gps, announce).unwrap();
+fn run_server<G: GPS>(gps: G, config: CmdlineConfig) {
+    let mut server = Server::new(gps, config).unwrap();
 
     server.run().unwrap();
 }

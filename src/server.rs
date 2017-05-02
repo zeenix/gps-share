@@ -23,6 +23,7 @@
 
 use gps;
 use avahi;
+use cmdline_config::CmdlineConfig;
 use client_handler::ClientHandler;
 use std::io;
 use std::net::{TcpListener, TcpStream};
@@ -36,10 +37,10 @@ pub struct Server<G> {
 }
 
 impl<G: gps::GPS> Server<G> {
-    pub fn new(gps: G, announce: bool) -> io::Result<Self> {
+    pub fn new(gps: G, config: CmdlineConfig) -> io::Result<Self> {
         let listener = TcpListener::bind(("0.0.0.0", 0))?;
 
-        let avahi = if announce {
+        let avahi = if config.announce_on_net {
             Some(avahi::Avahi::new())
         } else {
             None
