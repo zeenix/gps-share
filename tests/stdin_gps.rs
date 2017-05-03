@@ -45,11 +45,11 @@ fn test_stdin_gps() {
     write_nmea_to_child(& mut child, nmea_trace);
 
     let mut port = get_port(& mut child);
-    while port == 0 {
+    if port == 0 {
+        std::thread::sleep(std::time::Duration::from_millis(100));
         port = get_port(& mut child);
-
-        std::thread::sleep(std::time::Duration::from_millis(10));
     }
+    assert_ne!(port, 0);
     println!("Port is {}", port);
 
     let trace = get_nmea_from_service(port, nmea_trace.len());
@@ -67,7 +67,7 @@ fn write_nmea_to_child(child: & mut Child, nmea_trace: &str) {
 }
 
 fn get_port(child: & mut Child) -> u16 {
-    let port;
+    let mut port:u16 = 0;
     if let Some(ref mut stdout) = child.stdout {
         let mut output = [0u8; 1024];
 
@@ -76,10 +76,15 @@ fn get_port(child: & mut Child) -> u16 {
 
         let output = String::from_utf8(output.to_vec()).unwrap();
 
-        let line2 = output.split("\n").nth(1).unwrap();
-        let port_str = line2.split(" ").nth(1).unwrap_or("0");
+        for line in output.split("\n") {
+            if let Some(port_str) = line.split(" ").nth(1) {
+                port = u16::from_str_radix(port_str, 10).unwrap_or(0);
 
-        port = u16::from_str_radix(port_str, 10).unwrap();
+                if port > 0 {
+                    break;
+                }
+            }
+        }
     } else {
         panic!();
     }
