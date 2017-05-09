@@ -24,4 +24,5 @@
 pub struct Config {
     pub dev_path: String,
     pub announce_on_net: bool,
+    pub port: u16,
 }

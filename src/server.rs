@@ -38,7 +38,7 @@ pub struct Server<G> {
 
 impl<G: gps::GPS> Server<G> {
     pub fn new(gps: G, config: Config) -> io::Result<Self> {
-        let listener = TcpListener::bind(("0.0.0.0", 0))?;
+        let listener = TcpListener::bind(("0.0.0.0", config.port))?;
 
         let avahi = if config.announce_on_net {
             Some(avahi::Avahi::new())

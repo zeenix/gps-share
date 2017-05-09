@@ -36,11 +36,19 @@ pub fn config_from_cmdline() -> Config {
                                 .short("a")
                                 .long("--disable-announce")
                                 .help("Disable announcing through Avahi"))
+                           .arg(Arg::with_name("port")
+                                .short("p")
+                                .long("--port")
+                                .help("Port to run TCP service on")
+                                .takes_value(true)
+                                .value_name("PORT"))
                            .get_matches();
 
     let announce = !matches.is_present("disable-announce");
     let dev_path = matches.value_of("device").unwrap().to_string();
+    let port: u16 = matches.value_of("port").unwrap_or("0").parse().unwrap_or(0);
 
     Config { dev_path:        dev_path,
-             announce_on_net: announce }
+             announce_on_net: announce,
+             port:            port }
 }

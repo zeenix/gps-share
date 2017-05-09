@@ -26,14 +26,27 @@ use std::io::Read;
 use std::net::TcpStream;
 
 #[test]
-fn test_stdin_gps() {
-    let mut child = Command::new("target/debug/gps-share")
-                        .arg("-a")
-                        .arg("-")
-                        .stdin(Stdio::piped())
-                        .stdout(Stdio::piped())
-                        .spawn()
-                        .expect("Failed to start gps-share");
+fn test_stdin_gps_autoport() {
+    test_stdin_gps(None);
+}
+
+#[test]
+fn test_stdin_gps_with_port() {
+    test_stdin_gps(Some(9314));
+}
+
+fn test_stdin_gps(tcp_port: Option<u16>) {
+    let mut cmd = Command::new("target/debug/gps-share");
+
+    cmd.arg("-a")
+       .arg("-")
+       .stdin(Stdio::piped())
+       .stdout(Stdio::piped());
+    if let Some(port) = tcp_port {
+        cmd.args(&["-p", &port.to_string()]);
+    }
+
+    let mut child = cmd.spawn().expect("Failed to start gps-share");
 
     let nmea_trace = "\
                       $GPVTG,0.0,T,,M,0.0,N,0.0,K,A*0D\n\
@@ -50,6 +63,9 @@ fn test_stdin_gps() {
         port = get_port(& mut child);
     }
     assert_ne!(port, 0);
+    if let Some(p) = tcp_port {
+        assert!(port == p);
+    }
     println!("Port is {}", port);
 
     let trace = get_nmea_from_service(port, nmea_trace.len());
