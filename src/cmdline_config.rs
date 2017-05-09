@@ -22,31 +22,25 @@
  */
 
 use clap::{Arg, App};
+use config::Config;
 
-pub struct CmdlineConfig {
-    pub dev_path: String,
-    pub announce_on_net: bool,
-}
+pub fn config_from_cmdline() -> Config {
+    let matches = App::new("GPS Share")
+                           .version("0.1")
+                           .author("Zeeshan Ali <zeeshanak@gnome.org>")
+                           .about("Utility to share your GPS device on local network.")
+                           .arg(Arg::with_name("device")
+                                .help("GPS device node")
+                                .required(true))
+                           .arg(Arg::with_name("disable-announce")
+                                .short("a")
+                                .long("--disable-announce")
+                                .help("Disable announcing through Avahi"))
+                           .get_matches();
 
-impl CmdlineConfig {
-    pub fn new() -> Self {
-        let matches = App::new("GPS Share")
-                               .version("0.1")
-                               .author("Zeeshan Ali <zeeshanak@gnome.org>")
-                               .about("Utility to share your GPS device on local network.")
-                               .arg(Arg::with_name("device")
-                                    .help("GPS device node")
-                                    .required(true))
-                               .arg(Arg::with_name("disable-announce")
-                                    .short("a")
-                                    .long("--disable-announce")
-                                    .help("Disable announcing through Avahi"))
-                               .get_matches();
+    let announce = !matches.is_present("disable-announce");
+    let dev_path = matches.value_of("device").unwrap().to_string();
 
-        let announce = !matches.is_present("disable-announce");
-        let dev_path = matches.value_of("device").unwrap().to_string();
-
-        CmdlineConfig { dev_path:        dev_path,
-                        announce_on_net: announce }
-    }
+    Config { dev_path:        dev_path,
+             announce_on_net: announce }
 }

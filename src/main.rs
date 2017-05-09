@@ -27,6 +27,7 @@ mod server;
 mod avahi;
 mod client_handler;
 mod stdin_gps;
+mod config;
 mod cmdline_config;
 
 extern crate serial;
@@ -43,13 +44,13 @@ use gps::GPS;
 use rs232::RS232;
 use stdin_gps::StdinGPS;
 use server::Server;
-use cmdline_config::CmdlineConfig;
+use config::Config;
 use std::thread;
 
 use chan_signal::Signal;
 
 fn main() {
-    let config = CmdlineConfig::new();
+    let config = cmdline_config::config_from_cmdline();
 
     let signal = chan_signal::notify(&[Signal::INT, Signal::TERM]);
     let (sdone, rdone) = chan::sync(0);
@@ -77,7 +78,7 @@ fn main() {
     }
 }
 
-fn run(_sdone: chan::Sender<()>, config: CmdlineConfig) {
+fn run(_sdone: chan::Sender<()>, config: Config) {
     match config.dev_path.as_ref() {
         "-" => {
             let stdin_gps = StdinGPS::new();
@@ -92,7 +93,7 @@ fn run(_sdone: chan::Sender<()>, config: CmdlineConfig) {
     };
 }
 
-fn run_server<G: GPS>(gps: G, config: CmdlineConfig) {
+fn run_server<G: GPS>(gps: G, config: Config) {
     let mut server = Server::new(gps, config).unwrap();
 
     server.run().unwrap();
