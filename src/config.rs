@@ -25,12 +25,14 @@ use libc;
 use std::ptr;
 use std::mem;
 use std::ffi::{CStr, CString};
+use serial;
 
 pub struct Config {
     pub dev_path: String,
     pub announce_on_net: bool,
     pub port: u16,
     pub net_iface: Option<String>,
+    pub baudrate: usize,
 }
 
 impl Config {
@@ -43,6 +45,23 @@ impl Config {
             },
 
             None => "0.0.0.0".to_string(),
+        }
+    }
+
+    pub fn get_baudrate(& self) -> serial::BaudRate {
+        match self.baudrate {
+            110    => serial::Baud110,
+            300    => serial::Baud300,
+            600    => serial::Baud600,
+            1200   => serial::Baud1200,
+            2400   => serial::Baud2400,
+            4800   => serial::Baud4800,
+            9600   => serial::Baud9600,
+            19200  => serial::Baud19200,
+            38400  => serial::Baud38400,
+            57600  => serial::Baud57600,
+            115200 => serial::Baud115200,
+            b      => serial::BaudOther(b),
         }
     }
 

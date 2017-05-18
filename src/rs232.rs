@@ -24,7 +24,6 @@
 use gps::GPS;
 use config::Config;
 use serial;
-use serial::prelude::*;
 use std::time::Duration;
 use std::io;
 use std::io::BufReader;
@@ -38,18 +37,22 @@ pub struct RS232 {
 impl RS232 {
     pub fn new(config: Rc<Config>) -> Result<Self, serial::Error> {
         let mut port = serial::open(config.dev_path.as_str())?;
-        port.reconfigure(& RS232::reconfigure)?;
-        port.set_timeout(Duration::from_millis(1000))?;
+        RS232::configure(& mut port as & mut serial::SerialPort, config)?;
 
         Ok(RS232 { reader: BufReader::new(port) })
     }
 
-    fn reconfigure(settings: & mut serial::SerialPortSettings) -> serial::Result<()> {
-        settings.set_baud_rate(serial::Baud38400)?; // FIXME: Need to be configurable
-        settings.set_char_size(serial::Bits8);
-        settings.set_parity(serial::ParityNone);
-        settings.set_stop_bits(serial::Stop1);
-        settings.set_flow_control(serial::FlowNone);
+    fn configure(port: & mut serial::SerialPort, config: Rc<Config>) -> serial::Result<()> {
+        let baudrate = config.get_baudrate();
+        let settings = serial::PortSettings { baud_rate: baudrate,
+                                              char_size: serial::Bits8,
+                                              parity: serial::ParityNone,
+                                              stop_bits: serial::Stop1,
+                                              flow_control: serial::FlowNone, };
+
+        port.configure(&settings)?;
+
+        port.set_timeout(Duration::from_millis(1000))?;
 
         Ok(())
     }
