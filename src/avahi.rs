@@ -71,11 +71,11 @@ impl Avahi {
                     Err(e) => {
                         println!("Failed to get interface index from Avahi: {}", e);
 
-                        0
+                        -1
                     }
                 }
             },
-            None => 0,
+            None => -1,
         };
         group.add_service(iface, -1, 0, "gps-share", "_nmea-0183._tcp", "", "", port, array)?;
         group.commit()?;
