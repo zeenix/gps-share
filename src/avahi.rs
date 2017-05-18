@@ -61,7 +61,8 @@ impl Avahi {
         println!("group: {}", group_path);
 
         let group = EntryGroup::new("org.freedesktop.Avahi", group_path, self.connection.clone());
-        let array: Vec<Vec<u8>> = vec!();
+        let txt = "accuracy=exact".to_string();
+        let array: Vec<Vec<u8>> = vec!(txt.into_bytes());
 
         let iface = match net_iface {
             Some(name) => {
