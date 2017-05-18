@@ -10,3 +10,4 @@ dbus-macros = { git = "https://github.com/antoyo/dbus-macros-rs", branch = "mast
 chan = "0.1.19"
 chan-signal = "0.2.0"
 clap = "2.23.1"
+libc = "^0.2.21"

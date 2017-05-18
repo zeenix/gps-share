@@ -39,6 +39,7 @@ extern crate core;
 extern crate chan;
 extern crate chan_signal;
 extern crate clap;
+extern crate libc;
 
 use gps::GPS;
 use rs232::RS232;
