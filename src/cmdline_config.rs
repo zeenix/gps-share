@@ -42,13 +42,21 @@ pub fn config_from_cmdline() -> Config {
                                 .help("Port to run TCP service on")
                                 .takes_value(true)
                                 .value_name("PORT"))
+                           .arg(Arg::with_name("interface")
+                                .short("n")
+                                .long("--network-interface")
+                                .help("Bind specific network interface")
+                                .takes_value(true)
+                                .value_name("INTERFACE"))
                            .get_matches();
 
     let announce = !matches.is_present("disable-announce");
     let dev_path = matches.value_of("device").unwrap().to_string();
     let port: u16 = matches.value_of("port").unwrap_or("0").parse().unwrap_or(0);
+    let iface = matches.value_of("interface").map(|s| { s.to_string() });
 
     Config { dev_path:        dev_path,
              announce_on_net: announce,
-             port:            port }
+             port:            port,
+             net_iface:       iface }
 }

@@ -39,7 +39,9 @@ pub struct Server<G> {
 
 impl<G: gps::GPS> Server<G> {
     pub fn new(gps: G, config: Config) -> io::Result<Self> {
-        let listener = TcpListener::bind(("0.0.0.0", config.port))?;
+        let ip = config.get_ip();
+        println!("IP: {}", ip);
+        let listener = TcpListener::bind((ip.as_str(), config.port))?;
 
         let avahi = if config.announce_on_net {
             Some(avahi::Avahi::new())
@@ -60,7 +62,9 @@ impl<G: gps::GPS> Server<G> {
         println!("Port: {}", port);
 
         if let Some(ref avahi) = self.avahi {
-            if let Err(e) = avahi.publish(None, port) {
+            let iface = self.config.net_iface.as_ref().map(|i| i.as_str());
+
+            if let Err(e) = avahi.publish(iface, port) {
                 println!("Failed to publish service on Avahi: {}", e);
             };
         };
