@@ -40,7 +40,6 @@ pub struct Server<G> {
 impl<G: gps::GPS> Server<G> {
     pub fn new(gps: G, config: Config) -> io::Result<Self> {
         let ip = config.get_ip();
-        println!("IP: {}", ip);
         let listener = TcpListener::bind((ip.as_str(), config.port))?;
 
         let avahi = if config.announce_on_net {
