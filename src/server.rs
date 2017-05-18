@@ -34,6 +34,7 @@ pub struct Server<G> {
     gps: Arc<Mutex<G>>,
     listener: TcpListener,
     avahi: Option<avahi::Avahi>,
+    config: Config,
 }
 
 impl<G: gps::GPS> Server<G> {
@@ -48,7 +49,8 @@ impl<G: gps::GPS> Server<G> {
 
         Ok(Server { gps:      Arc::new(Mutex::new(gps)),
                     listener: listener,
-                    avahi:    avahi })
+                    avahi:    avahi,
+                    config:   config })
     }
 
     pub fn run(& mut self) -> io::Result<()> {
