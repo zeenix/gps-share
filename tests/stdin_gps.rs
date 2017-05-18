@@ -27,15 +27,25 @@ use std::net::TcpStream;
 
 #[test]
 fn test_stdin_gps_autoport() {
-    test_stdin_gps(None);
+    test_stdin_gps(None, None);
+}
+
+#[test]
+fn test_stdin_gps_autoport_iface() {
+    test_stdin_gps(None, Some("lo"));
 }
 
 #[test]
 fn test_stdin_gps_with_port() {
-    test_stdin_gps(Some(9314));
+    test_stdin_gps(Some(9314), None);
 }
 
-fn test_stdin_gps(tcp_port: Option<u16>) {
+#[test]
+fn test_stdin_gps_with_port_iface() {
+    test_stdin_gps(None, Some("lo"));
+}
+
+fn test_stdin_gps(tcp_port: Option<u16>, net_iface: Option<&str>) {
     let mut cmd = Command::new("target/debug/gps-share");
 
     cmd.arg("-a")
@@ -44,6 +54,9 @@ fn test_stdin_gps(tcp_port: Option<u16>) {
        .stdout(Stdio::piped());
     if let Some(port) = tcp_port {
         cmd.args(&["-p", &port.to_string()]);
+    }
+    if let Some(iface) = net_iface {
+        cmd.args(&["-n", iface]);
     }
 
     let mut child = cmd.spawn().expect("Failed to start gps-share");
