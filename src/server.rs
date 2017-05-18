@@ -58,11 +58,15 @@ impl<G: gps::GPS> Server<G> {
     pub fn run(& mut self) -> io::Result<()> {
         let addr = self.listener.local_addr()?;
         let port = addr.port();
-        println!("TCP server bound on all interfaces");
+        let config = &self.config;
+        match config.net_iface {
+            Some(ref i) => println!("TCP server bound on {} interface", i),
+            None => println!("TCP server bound on all interfaces"),
+        };
         println!("Port: {}", port);
 
         if let Some(ref avahi) = self.avahi {
-            let iface = self.config.net_iface.as_ref().map(|i| i.as_str());
+            let iface = config.net_iface.as_ref().map(|i| i.as_str());
 
             if let Err(e) = avahi.publish(iface, port) {
                 println!("Failed to publish service on Avahi: {}", e);
