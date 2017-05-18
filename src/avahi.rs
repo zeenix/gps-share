@@ -26,6 +26,7 @@ use std::rc::Rc;
 
 dbus_interface!("org.freedesktop.Avahi.Server", interface Server {
     fn entry_group_new() -> dbus::Path;
+    fn get_network_interface_index_by_name(name: &str) -> i32;
 });
 
 dbus_interface!("org.freedesktop.Avahi.EntryGroup", interface EntryGroup {
@@ -53,7 +54,7 @@ impl Avahi {
         Avahi { connection: connection }
     }
 
-    pub fn publish(&self, port: u16) -> Result<(),dbus::Error> {
+    pub fn publish(&self, net_iface: Option<&str>, port: u16) -> Result<(),dbus::Error> {
         let server: Server = Server::new("org.freedesktop.Avahi", "/", self.connection.clone());
         // FIXME: Make this async when it's possible
         let group_path = server.entry_group_new()?;
@@ -61,7 +62,21 @@ impl Avahi {
 
         let group = EntryGroup::new("org.freedesktop.Avahi", group_path, self.connection.clone());
         let array: Vec<Vec<u8>> = vec!();
-        group.add_service(-1, -1, 0, "gps-share", "_nmea-0183._tcp", "", "", port, array)?;
+
+        let iface = match net_iface {
+            Some(name) => {
+                match server.get_network_interface_index_by_name(name) {
+                    Ok(i) => i,
+                    Err(e) => {
+                        println!("Failed to get interface index from Avahi: {}", e);
+
+                        0
+                    }
+                }
+            },
+            None => 0,
+        };
+        group.add_service(iface, -1, 0, "gps-share", "_nmea-0183._tcp", "", "", port, array)?;
         group.commit()?;
 
         Ok(())

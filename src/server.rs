@@ -60,7 +60,7 @@ impl<G: gps::GPS> Server<G> {
         println!("Port: {}", port);
 
         if let Some(ref avahi) = self.avahi {
-            if let Err(e) = avahi.publish(port) {
+            if let Err(e) = avahi.publish(None, port) {
                 println!("Failed to publish service on Avahi: {}", e);
             };
         };
