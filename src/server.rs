@@ -29,16 +29,17 @@ use std::io;
 use std::net::{TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::rc::Rc;
 
 pub struct Server<G> {
     gps: Arc<Mutex<G>>,
     listener: TcpListener,
     avahi: Option<avahi::Avahi>,
-    config: Config,
+    config: Rc<Config>,
 }
 
 impl<G: gps::GPS> Server<G> {
-    pub fn new(gps: G, config: Config) -> io::Result<Self> {
+    pub fn new(gps: G, config: Rc<Config>) -> io::Result<Self> {
         let ip = config.get_ip();
         let listener = TcpListener::bind((ip.as_str(), config.port))?;
 

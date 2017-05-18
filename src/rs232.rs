@@ -22,20 +22,22 @@
  */
 
 use gps::GPS;
+use config::Config;
 use serial;
 use serial::prelude::*;
 use std::time::Duration;
 use std::io;
 use std::io::BufReader;
 use std::io::BufRead;
+use std::rc::Rc;
 
 pub struct RS232 {
     reader: BufReader<serial::SystemPort>,
 }
 
 impl RS232 {
-    pub fn new(path: &str) -> Result<Self, serial::Error> {
-        let mut port = serial::open(path)?;
+    pub fn new(config: Rc<Config>) -> Result<Self, serial::Error> {
+        let mut port = serial::open(config.dev_path.as_str())?;
         port.reconfigure(& RS232::reconfigure)?;
         port.set_timeout(Duration::from_millis(1000))?;
 

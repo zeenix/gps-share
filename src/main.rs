@@ -49,6 +49,7 @@ use config::Config;
 use std::thread;
 
 use chan_signal::Signal;
+use std::rc::Rc;
 
 fn main() {
     let config = cmdline_config::config_from_cmdline();
@@ -56,7 +57,7 @@ fn main() {
     let signal = chan_signal::notify(&[Signal::INT, Signal::TERM]);
     let (sdone, rdone) = chan::sync(0);
 
-    thread::spawn(move || run(sdone, config));
+    thread::spawn(move || run(sdone, Rc::new(config)));
 
     chan_select! {
         signal.recv() -> signal => {
@@ -79,22 +80,22 @@ fn main() {
     }
 }
 
-fn run(_sdone: chan::Sender<()>, config: Config) {
+fn run(_sdone: chan::Sender<()>, config: Rc<Config>) {
     match config.dev_path.as_ref() {
         "-" => {
             let stdin_gps = StdinGPS::new();
 
-            run_server(stdin_gps, config);
+            run_server(stdin_gps, config.clone());
         },
         _   => {
-            let rs232 = RS232::new(config.dev_path.as_str()).unwrap();
+            let rs232 = RS232::new(config.clone()).unwrap();
 
-            run_server(rs232, config);
+            run_server(rs232, config.clone());
         },
     };
 }
 
-fn run_server<G: GPS>(gps: G, config: Config) {
+fn run_server<G: GPS>(gps: G, config: Rc<Config>) {
     let mut server = Server::new(gps, config).unwrap();
 
     server.run().unwrap();
