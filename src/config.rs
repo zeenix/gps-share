@@ -35,60 +35,68 @@ pub struct Config {
 
 impl Config {
     pub fn get_ip(& self) -> String {
-        if let Some(ref iface) = self.net_iface {
-            unsafe {
-                let mut addr_ptr = ptr::null_mut();
-
-                let ret = libc::getifaddrs(& mut addr_ptr);
-                if ret != 0 || addr_ptr.is_null() {
-                    return "0.0.0.0".to_string();
+        match self.net_iface {
+            Some(ref iface) => {
+                unsafe {
+                    Config::get_ip_for_iface(iface)
                 }
+            },
 
-                while !addr_ptr.is_null() {
-                    let addr = *addr_ptr;
-                    addr_ptr = addr.ifa_next;
+            None => "0.0.0.0".to_string(),
+        }
+    }
 
-                    let name;
-                    match CStr::from_ptr(addr.ifa_name).to_str() {
-                        Ok(n) => name = n,
-                        Err(e) => {
-                            println!("{}", e);
+    unsafe fn get_ip_for_iface(iface: & String) -> String {
+        let mut addr_ptr = ptr::null_mut();
 
-                            continue;
-                        },
-                    };
+        let ret = libc::getifaddrs(& mut addr_ptr);
+        if ret != 0 || addr_ptr.is_null() {
+            return "0.0.0.0".to_string();
+        }
 
-                    if name != iface.as_str() || addr.ifa_addr.is_null() {
-                        continue;
-                    }
+        while !addr_ptr.is_null() {
+            let addr = *addr_ptr;
+            addr_ptr = addr.ifa_next;
 
-                    let mut host = CString::from_vec_unchecked(vec![0u8; libc::NI_MAXHOST as usize]);
-                    let size;
-                    match i32::from((*addr.ifa_addr).sa_family) {
-                        libc::AF_INET  => size = mem::size_of::<libc::sockaddr_in>() as u32,
-                        libc::AF_INET6 => size = mem::size_of::<libc::sockaddr_in6>() as u32,
-                        _ => continue,
-                    };
-                    let host_ptr = host.into_raw() as * mut i8;
-                    let ret = libc::getnameinfo(addr.ifa_addr, size,
-                                                host_ptr, libc::NI_MAXHOST,
-                                                ptr::null_mut(), 0,
-                                                libc::NI_NUMERICHOST);
-                    host = CString::from_raw(host_ptr);
-                    if ret != 0 {
-                        return "0.0.0.0".to_string();
-                    }
+            let name;
+            match CStr::from_ptr(addr.ifa_name).to_str() {
+                Ok(n) => name = n,
+                Err(e) => {
+                    println!("{}", e);
 
-                    match host.into_string() {
-                        Ok(ip) => return ip,
-                        Err(e) => {
-                            println!("{}", e);
+                    continue;
+                },
+            };
 
-                            continue;
-                        },
+            if name != iface.as_str() || addr.ifa_addr.is_null() {
+                continue;
+            }
 
-                    }
-                }
+            let mut host = CString::from_vec_unchecked(vec![0u8; libc::NI_MAXHOST as usize]);
+            let size;
+            match i32::from((*addr.ifa_addr).sa_family) {
+                libc::AF_INET  => size = mem::size_of::<libc::sockaddr_in>() as u32,
+                libc::AF_INET6 => size = mem::size_of::<libc::sockaddr_in6>() as u32,
+                _ => continue,
+            };
+            let host_ptr = host.into_raw() as * mut i8;
+            let ret = libc::getnameinfo(addr.ifa_addr, size,
+                                        host_ptr, libc::NI_MAXHOST,
+                                        ptr::null_mut(), 0,
+                                        libc::NI_NUMERICHOST);
+            host = CString::from_raw(host_ptr);
+            if ret != 0 {
+                return "0.0.0.0".to_string();
+            }
+
+            match host.into_string() {
+                Ok(ip) => return ip,
+                Err(e) => {
+                    println!("{}", e);
+
+                    continue;
+                },
+
             }
         }
 
