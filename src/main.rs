@@ -30,7 +30,7 @@ mod stdin_gps;
 mod config;
 mod cmdline_config;
 
-extern crate serial;
+extern crate serialport;
 extern crate dbus;
 #[macro_use]
 extern crate dbus_macros;

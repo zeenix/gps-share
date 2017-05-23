@@ -23,7 +23,9 @@
 
 use gps::GPS;
 use config::Config;
-use serial;
+use serialport;
+use serialport::posix::TTYPort;
+use serialport::prelude::*;
 use std::time::Duration;
 use std::io;
 use std::io::BufReader;
@@ -31,30 +33,21 @@ use std::io::BufRead;
 use std::rc::Rc;
 
 pub struct RS232 {
-    reader: BufReader<serial::SystemPort>,
+    reader: BufReader<TTYPort>,
 }
 
 impl RS232 {
-    pub fn new(config: Rc<Config>) -> Result<Self, serial::Error> {
-        let mut port = serial::open(config.dev_path.as_os_str())?;
-        RS232::configure(& mut port as & mut serial::SerialPort, config)?;
+    pub fn new(config: Rc<Config>) -> Result<Self, serialport::Error> {
+        let baudrate = config.get_baudrate();
+        let settings = serialport::SerialPortSettings { baud_rate: baudrate,
+                                                        data_bits: DataBits::Eight,
+                                                        parity: Parity::None,
+                                                        stop_bits: StopBits::One,
+                                                        flow_control: FlowControl::None,
+                                                        timeout: Duration::from_millis(1000), };
+        let port = TTYPort::open(config.dev_path.as_path(), &settings)?;
 
         Ok(RS232 { reader: BufReader::new(port) })
-    }
-
-    fn configure(port: & mut serial::SerialPort, config: Rc<Config>) -> serial::Result<()> {
-        let baudrate = config.get_baudrate();
-        let settings = serial::PortSettings { baud_rate: baudrate,
-                                              char_size: serial::Bits8,
-                                              parity: serial::ParityNone,
-                                              stop_bits: serial::Stop1,
-                                              flow_control: serial::FlowNone, };
-
-        port.configure(&settings)?;
-
-        port.set_timeout(Duration::from_millis(1000))?;
-
-        Ok(())
     }
 }
 
