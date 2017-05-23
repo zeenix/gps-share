@@ -81,8 +81,8 @@ fn main() {
 }
 
 fn run(_sdone: chan::Sender<()>, config: Rc<Config>) {
-    match config.dev_path.as_ref() {
-        "-" => {
+    match config.dev_path.to_str() {
+        Some("-") => {
             let stdin_gps = StdinGPS::new();
 
             run_server(stdin_gps, config.clone());

@@ -36,7 +36,7 @@ pub struct RS232 {
 
 impl RS232 {
     pub fn new(config: Rc<Config>) -> Result<Self, serial::Error> {
-        let mut port = serial::open(config.dev_path.as_str())?;
+        let mut port = serial::open(config.dev_path.as_os_str())?;
         RS232::configure(& mut port as & mut serial::SerialPort, config)?;
 
         Ok(RS232 { reader: BufReader::new(port) })

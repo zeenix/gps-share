@@ -28,7 +28,7 @@ use std::ffi::{CStr, CString};
 use serial;
 
 pub struct Config {
-    pub dev_path: String,
+    pub dev_path: ::std::path::PathBuf,
     pub announce_on_net: bool,
     pub port: u16,
     pub net_iface: Option<String>,
