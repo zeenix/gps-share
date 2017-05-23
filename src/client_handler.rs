@@ -42,7 +42,11 @@ impl<G: gps::GPS> ClientHandler<G> {
         let mut buffer = String::new();
 
         loop {
-            self.gps.lock().unwrap().read_line(& mut buffer).unwrap();
+            if let Err(e) = self.gps.lock().unwrap().read_line(& mut buffer) {
+                println!("Failed to read from serial port: {}",  e);
+
+                continue;
+            }
 
             let to_delete = self.write_to_clients(& buffer);
             buffer.clear();
