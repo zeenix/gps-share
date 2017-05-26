@@ -44,7 +44,15 @@ impl<G: gps::GPS> Server<G> {
         let listener = TcpListener::bind((ip.as_str(), config.port))?;
 
         let avahi = if config.announce_on_net {
-            Some(avahi::Avahi::new())
+            match avahi::Avahi::new() {
+                Ok(avahi) =>  Some(avahi),
+
+                Err(e) => {
+                    println!("Failed to connect to Avahi: {}", e);
+
+                    None
+                }
+            }
         } else {
             None
         };

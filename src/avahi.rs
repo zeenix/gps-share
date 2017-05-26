@@ -47,11 +47,11 @@ pub struct Avahi {
 }
 
 impl Avahi {
-    pub fn new() -> Self {
-        let c = dbus::Connection::get_private(dbus::BusType::System).unwrap();
+    pub fn new() -> Result<Self, dbus::Error> {
+        let c = dbus::Connection::get_private(dbus::BusType::System)?;
         let connection = Rc::new(c);
 
-        Avahi { connection: connection }
+        Ok(Avahi { connection: connection })
     }
 
     pub fn publish(&self, net_iface: Option<&str>, port: u16) -> Result<(),dbus::Error> {
