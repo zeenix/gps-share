@@ -86,19 +86,37 @@ fn run(_sdone: chan::Sender<()>, config: Rc<Config>) {
         if path.to_str() == Some("-") {
             let stdin_gps = StdinGPS::new();
 
-            run_server(stdin_gps, config.clone());
+            run_server_handle_err(stdin_gps, config.clone());
 
             return;
         }
     }
 
-    let rs232 = RS232::new(config.clone()).unwrap();
+    match RS232::new(config.clone()) {
+        Ok(rs232) => run_server_handle_err(rs232, config.clone()),
 
-    run_server(rs232, config.clone());
+        Err(e) => {
+            match e.kind() {
+                ::std::io::ErrorKind::NotFound => println!("{}", e),
+
+                _ => println!("Failed to open serial device: {}", e),
+            }
+
+            std::process::exit(1);
+        }
+    }
 }
 
-fn run_server<G: GPS>(gps: G, config: Rc<Config>) {
-    let mut server = Server::new(gps, config).unwrap();
+fn run_server_handle_err<G: GPS>(gps: G, config: Rc<Config>) {
+    if let Err(e) = run_server(gps, config) {
+        println!("Failed to start TCP service: {}", e);
 
-    server.run().unwrap();
+        std::process::exit(2);
+    }
+}
+
+fn run_server<G: GPS>(gps: G, config: Rc<Config>) -> ::std::io::Result<()> {
+    let mut server = Server::new(gps, config)?;
+
+    server.run()
 }
