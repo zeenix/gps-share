@@ -91,7 +91,8 @@ impl<G: gps::GPS> Server<G> {
 
                     let launch_handler;
                     {
-                        // unwrap cause this shouldn't fail, should it?
+                        // unwrap cause we don't want a poisoned lock:
+                        // https://doc.rust-lang.org/std/sync/struct.Mutex.html#poisoning
                         let mut streams = streams_arc.lock().unwrap();
                         streams.push(stream);
                         launch_handler = streams.len() == 1;
