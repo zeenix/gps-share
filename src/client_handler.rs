@@ -42,6 +42,8 @@ impl<G: gps::GPS> ClientHandler<G> {
         let mut buffer = String::new();
 
         loop {
+            // unwrap cause we don't want a poisoned lock:
+            // https://doc.rust-lang.org/std/sync/struct.Mutex.html#poisoning
             if let Err(e) = self.gps.lock().unwrap().read_line(& mut buffer) {
                 println!("Failed to read from serial port: {}",  e);
 
@@ -51,6 +53,8 @@ impl<G: gps::GPS> ClientHandler<G> {
             let to_delete = self.write_to_clients(& buffer);
             buffer.clear();
 
+            // unwrap cause we don't want a poisoned lock:
+            // https://doc.rust-lang.org/std/sync/struct.Mutex.html#poisoning
             let mut streams = self.streams.lock().unwrap();
             for i in to_delete.iter().rev() {
                 streams.remove(*i);
@@ -65,6 +69,8 @@ impl<G: gps::GPS> ClientHandler<G> {
     fn write_to_clients(& mut self, buffer: & String) -> Vec<usize> {
         let mut to_delete: Vec<usize> = vec!();
 
+        // unwrap cause we don't want a poisoned lock:
+        // https://doc.rust-lang.org/std/sync/struct.Mutex.html#poisoning
         let streams = self.streams.lock().unwrap();
         for i in 0..streams.len() {
             let mut stream = &streams[i];
