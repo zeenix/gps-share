@@ -81,18 +81,28 @@ fn main() {
 }
 
 fn run(_sdone: chan::Sender<()>, config: Rc<Config>) {
-    match config.dev_path.to_str() {
-        Some("-") => {
-            let stdin_gps = StdinGPS::new();
+    match config.dev_path {
+        Some(ref path) => {
+            match path.to_str() {
+                Some("-") => {
+                    let stdin_gps = StdinGPS::new();
 
-            run_server(stdin_gps, config.clone());
+                    run_server(stdin_gps, config.clone());
+                },
+                _   => {
+                    let rs232 = RS232::new(config.clone()).unwrap();
+
+                    run_server(rs232, config.clone());
+                },
+            }
         },
-        _   => {
+
+        None => {
             let rs232 = RS232::new(config.clone()).unwrap();
 
             run_server(rs232, config.clone());
-        },
-    };
+        }
+    }
 }
 
 fn run_server<G: GPS>(gps: G, config: Rc<Config>) {

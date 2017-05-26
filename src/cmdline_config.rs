@@ -31,7 +31,7 @@ pub fn config_from_cmdline() -> Config {
                            .about("Utility to share your GPS device on local network.")
                            .arg(Arg::with_name("device")
                                 .help("GPS device node")
-                                .required(true))
+                                .required(false))
                            .arg(Arg::with_name("disable-announce")
                                 .short("a")
                                 .long("--disable-announce")
@@ -57,7 +57,7 @@ pub fn config_from_cmdline() -> Config {
                            .get_matches();
 
     let announce = !matches.is_present("disable-announce");
-    let dev_path = ::std::path::PathBuf::from(matches.value_of("device").unwrap());
+    let dev_path = matches.value_of("device").and_then(|p| { Some(::std::path::PathBuf::from(p)) });
     let port: u16 = matches.value_of("port").unwrap_or("0").parse().unwrap_or(0);
     let iface = matches.value_of("interface").map(|s| { s.to_string() });
     let baudrate = matches.value_of("baudrate").unwrap_or("38400").parse().unwrap_or(38400usize);
