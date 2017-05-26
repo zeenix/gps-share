@@ -71,6 +71,7 @@ impl RS232 {
         let context = libudev::Context::new()?;
         let mut enumerator = libudev::Enumerator::new(&context)?;
         enumerator.match_subsystem("tty")?;
+        enumerator.match_property("ID_BUS", "usb")?;
         let devices = enumerator.scan_devices()?;
         for d in devices {
             if let Some(driver) = d.parent().as_ref().and_then(|p| { p.driver() }) {
