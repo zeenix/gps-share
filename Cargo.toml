@@ -2,6 +2,12 @@
 name = "gps-share"
 version = "0.1.0"
 authors = ["Zeeshan Ali <zeenix@gmail.com>"]
+categories = ["hardware-support", "command-line-utilities", "command-line-interface", "os::unix-apis"]
+keywords = ["serial", "hardware", "system", "RS232", "GPS", "avahi" ]
+license = "GPL-2.0+"
+readme = "README.md"
+repository = "https://github.com/zeenix/gps-share"
+description = "Utility to share your GPS device on local network"
 
 [dependencies]
 serial = "0.3"
