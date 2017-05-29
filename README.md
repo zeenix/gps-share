@@ -45,3 +45,9 @@ gps-share can autodetect the device to use if it's already mounted as a serial
 port but it assumes a baudrate of 38400. You can manually set the device node to
 use by passing the device node path as argument and set the baudrate using the
 '-b' commandline option. Pass '--help' for a full list of supported options.
+
+## Supported operating systems
+
+gps-share is targetted specifically for Linux. It may or may not work on other
+POSIX hosts. Patches to add/fix support for non-Linux systems, are more than
+welcome.
