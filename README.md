@@ -11,7 +11,7 @@ gps-share has two goals:
 * Share your GPS device on the local network so that all machines in your home
   or office can make use of it.
 * Enable support for standalone (i-e not part of a cellular modem) GPS devices
-  in Geoclue. Since Geoclue has been able to make use of network NMEA source
+  in Geoclue. Since Geoclue has been able to make use of network NMEA sources
   since 2015, gps-share works out of the box with Geoclue.
 
 The latter means that it is a replacement for
