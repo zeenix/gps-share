@@ -51,3 +51,6 @@ use by passing the device node path as argument and set the baudrate using the
 gps-share is targetted specifically for Linux. It may or may not work on other
 POSIX hosts. Patches to add/fix support for non-Linux systems, are more than
 welcome.
+
+On Fedora, you might need to either disable selinux or configure it to allow
+gps-share to start and announce a TCP service.
