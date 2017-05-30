@@ -21,6 +21,8 @@ been documented](https://gypsy.freedesktop.org/why-not-gpsd.html), Gypsy has
 been unmaintained for many years now. I did not feel like reviving a dead
 project and I really wanted to code in Rust so I decided to create gps-share.
 
+![Screenshot of gps-share in action](data/screenshot.png "Screenshot of GNOME Maps using gps-share on the fast train from Gothenburg to Stockholm")
+
 ## Dependencies
 
 While cargo manages the Rust crates gps-share depend on, you'll also need the
