@@ -51,6 +51,14 @@ you'll nee to set the baudrate to 115200.
 
 Pass '--help' for a full list of supported commandline options.
 
+## Permisions
+
+gps-share will need read and write access to device nodes. Adding your user to
+'dialout' group gives you this access for USB devices on Fedora hosts but it is
+not the case for the /dev/rfcomm0 device created by the above mentioned command.
+For those devices, you'll either need to run gps-share as root or set permission
+on /dev/rfcomm0.
+
 ## Supported operating systems
 
 gps-share is targetted specifically for Linux. It may or may not work on other
