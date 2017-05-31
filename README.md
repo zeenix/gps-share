@@ -46,7 +46,10 @@ Wireless GPS MkII.
 gps-share can autodetect the device to use if it's already mounted as a serial
 port but it assumes a baudrate of 38400. You can manually set the device node to
 use by passing the device node path as argument and set the baudrate using the
-'-b' commandline option. Pass '--help' for a full list of supported options.
+'-b' commandline option. For example for the TomTom Wireless GPS MkII device,
+you'll nee to set the baudrate to 115200.
+
+Pass '--help' for a full list of supported commandline options.
 
 ## Supported operating systems
 
