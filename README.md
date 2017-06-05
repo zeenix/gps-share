@@ -87,7 +87,7 @@ directly (without building first):
 
 If you need to pass any arguments or options to the commandline, you do:
 
-    cargo run -- [ARGUMENT1..]
+    cargo run -- [ARGUMENT1 [ARGUMENT2 [..]]]
 
 To see all supported options and arguments, run:
 
