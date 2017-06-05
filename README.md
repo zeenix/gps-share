@@ -67,3 +67,28 @@ welcome.
 
 On Fedora, you might need to either disable selinux or configure it to allow
 gps-share to start and announce a TCP service.
+
+## Building from source
+
+Just like most Rust projects, gps-share uses cargo build system so building is
+as simple as:
+
+    cargo build
+
+Once built, binary is in `target/debug/gps-share`. If you want to build
+gps-share for production use, with all optimizations:
+
+    cargo --release build
+
+which puts the binary in `target/release/gps-share`. You can also run the binary
+directly (without building first):
+
+    cargo run
+
+If you need to pass any arguments or options to the commandline, you do:
+
+    cargo run -- [ARGUMENT1..]
+
+To see all supported options and arguments, run:
+
+    cargo run -- --help
