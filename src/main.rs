@@ -84,7 +84,7 @@ fn main() {
 fn run(_sdone: chan::Sender<()>, config: Rc<Config>) {
     if let Some(ref path) = config.dev_path {
         if path.to_str() == Some("-") {
-            let stdin_gps = StdinGPS::new();
+            let stdin_gps = Box::new(StdinGPS::new());
 
             run_server_handle_err(stdin_gps, config.clone());
 
@@ -93,7 +93,7 @@ fn run(_sdone: chan::Sender<()>, config: Rc<Config>) {
     }
 
     match RS232::new(config.clone()) {
-        Ok(rs232) => run_server_handle_err(rs232, config.clone()),
+        Ok(rs232) => run_server_handle_err(Box::new(rs232), config.clone()),
 
         Err(e) => {
             match e.kind() {
@@ -107,7 +107,7 @@ fn run(_sdone: chan::Sender<()>, config: Rc<Config>) {
     }
 }
 
-fn run_server_handle_err<G: GPS>(gps: G, config: Rc<Config>) {
+fn run_server_handle_err(gps: Box<GPS>, config: Rc<Config>) {
     if let Err(e) = run_server(gps, config) {
         println!("Failed to start TCP service: {}", e);
 
@@ -115,7 +115,7 @@ fn run_server_handle_err<G: GPS>(gps: G, config: Rc<Config>) {
     }
 }
 
-fn run_server<G: GPS>(gps: G, config: Rc<Config>) -> ::std::io::Result<()> {
+fn run_server(gps: Box<GPS>, config: Rc<Config>) -> ::std::io::Result<()> {
     let mut server = Server::new(gps, config)?;
 
     server.run()

@@ -26,13 +26,13 @@ use std::net::{TcpStream};
 use std::io::Write;
 use std::sync::{Arc, Mutex};
 
-pub struct ClientHandler<G> {
-    gps: Arc<Mutex<G>>,
+pub struct ClientHandler {
+    gps: Arc<Mutex<Box<gps::GPS>>>,
     streams: Arc<Mutex<Vec<TcpStream>>>,
 }
 
-impl<G: gps::GPS> ClientHandler<G> {
-    pub fn new(gps:     Arc<Mutex<G>>,
+impl ClientHandler {
+    pub fn new(gps:     Arc<Mutex<Box<gps::GPS>>>,
                streams: Arc<Mutex<Vec<TcpStream>>>) -> Self {
         ClientHandler { gps:      gps,
                         streams:  streams }
