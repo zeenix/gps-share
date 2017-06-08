@@ -93,3 +93,8 @@ If you need to pass any arguments or options to the commandline, you do:
 To see all supported options and arguments, run:
 
     cargo run -- --help
+
+## License
+
+gps-share is licensed under GNU GPLv2+. Please refer to [LICENCE file](LICENSE)
+for details.
