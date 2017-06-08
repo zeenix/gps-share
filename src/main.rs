@@ -82,18 +82,20 @@ fn main() {
 }
 
 fn run(_sdone: chan::Sender<()>, config: Rc<Config>) {
+    let gps = get_gps(config.clone());
+
+    run_server_handle_err(gps, config.clone());
+}
+
+fn get_gps(config: Rc<Config>) -> Box<GPS> {
     if let Some(ref path) = config.dev_path {
         if path.to_str() == Some("-") {
-            let stdin_gps = Box::new(StdinGPS::new());
-
-            run_server_handle_err(stdin_gps, config.clone());
-
-            return;
+            return Box::new(StdinGPS::new());
         }
     }
 
     match RS232::new(config.clone()) {
-        Ok(rs232) => run_server_handle_err(Box::new(rs232), config.clone()),
+        Ok(rs232) => return Box::new(rs232),
 
         Err(e) => {
             match e.kind() {
