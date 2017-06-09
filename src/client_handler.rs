@@ -27,12 +27,12 @@ use std::io::Write;
 use std::sync::{Arc, Mutex};
 
 pub struct ClientHandler {
-    gps: Arc<Mutex<Box<gps::GPS>>>,
+    gps: Arc<Mutex<gps::GPS>>,
     streams: Arc<Mutex<Vec<TcpStream>>>,
 }
 
 impl ClientHandler {
-    pub fn new(gps:     Arc<Mutex<Box<gps::GPS>>>,
+    pub fn new(gps:     Arc<Mutex<gps::GPS>>,
                streams: Arc<Mutex<Vec<TcpStream>>>) -> Self {
         ClientHandler { gps:      gps,
                         streams:  streams }

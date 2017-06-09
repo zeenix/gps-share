@@ -32,7 +32,7 @@ use std::thread;
 use std::rc::Rc;
 
 pub struct Server {
-    gps: Arc<Mutex<Box<gps::GPS>>>,
+    gps: Arc<Mutex<gps::GPS>>,
     listener: TcpListener,
     avahi: Option<avahi::Avahi>,
     config: Rc<Config>,
