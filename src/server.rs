@@ -39,7 +39,7 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn new(gps: Box<gps::GPS>, config: Rc<Config>) -> io::Result<Self> {
+    pub fn new<T: gps::GPS>(gps: T, config: Rc<Config>) -> io::Result<Self> {
         let ip = config.get_ip();
         let listener = TcpListener::bind((ip.as_str(), config.port))?;
 
