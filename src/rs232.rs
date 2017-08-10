@@ -38,7 +38,7 @@ pub struct RS232 {
 
 impl RS232 {
     pub fn new(config: Rc<Config>) -> io::Result<Self> {
-        match config.dev_path {
+        match config.dev_id {
             Some(ref path) => RS232::new_for_path(path.as_path(), & config),
             None => RS232::new_detect(& config),
         }

@@ -57,14 +57,29 @@ pub fn config_from_cmdline() -> Config {
                            .get_matches();
 
     let announce = !matches.is_present("disable-announce");
-    let dev_path = matches.value_of("device").and_then(|p| { Some(::std::path::PathBuf::from(p)) });
+    let dev_id = get_device_id(matches);
     let port: u16 = matches.value_of("port").unwrap_or("0").parse().unwrap_or(0);
     let iface = matches.value_of("interface").map(|s| { s.to_string() });
     let baudrate = matches.value_of("baudrate").unwrap_or("38400").parse().unwrap_or(38400usize);
 
-    Config { dev_path:        dev_path,
+    Config { dev_id:        dev_id,
              announce_on_net: announce,
              port:            port,
              net_iface:       iface,
              baudrate:        baudrate, }
+}
+
+fn get_device_id(matches: ArgMatches) -> Option<DeviceID> {
+    match matches.value_of("device");
+        None => None,
+
+        Some(dev) => {
+            if (dev.starts_with("/") {
+                Some(::std::path::PathBuf::from(p))
+            } else {
+                // No bluez support yet
+                None
+            }
+        }
+    }
 }

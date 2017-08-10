@@ -88,7 +88,7 @@ fn run(_sdone: chan::Sender<()>, config: Rc<Config>) {
 }
 
 fn get_gps(config: Rc<Config>) -> Box<GPS> {
-    if let Some(ref path) = config.dev_path {
+    if let Some(ref path) = config.dev_id {
         if path.to_str() == Some("-") {
             return Box::new(StdinGPS::new());
         }

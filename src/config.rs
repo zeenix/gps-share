@@ -27,8 +27,13 @@ use std::mem;
 use std::ffi::{CStr, CString};
 use serial;
 
+pub enum DeviceID {
+    Path(::std::path::PathBuf),
+    MAC(String),
+}
+
 pub struct Config {
-    pub dev_path: Option<::std::path::PathBuf>,
+    pub dev_id: Option<DeviceID>,
     pub announce_on_net: bool,
     pub port: u16,
     pub net_iface: Option<String>,
