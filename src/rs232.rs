@@ -76,21 +76,26 @@ impl RS232 {
         enumerator.match_property("ID_BUS", "usb")?;
         let devices = enumerator.scan_devices()?;
         for d in devices {
+            let path = d.devnode().unwrap_or(Path::new("UNKNOWN")).to_str().unwrap();
             if let Some(driver) = d.parent().as_ref().and_then(|p| p.driver()) {
                 if driver != "pl2303" && driver != "cdc_acm" {
                     continue;
                 }
             }
 
+            println!("{} seems interesting", path);
             if let Some(p) = d.devnode().and_then(|devnode| devnode.to_str()) {
                 let path = Path::new(p);
 
                 match RS232::new_for_path(&path, config) {
                     Ok(mut gps) => {
+                        println!("Needs verification");
                         if gps.verify() {
                             println!("Detected {} as a GPS device", p);
 
                             return Ok(gps);
+                        } else {
+                            println!("Not verified");
                         }
                     }
 
@@ -109,11 +114,15 @@ impl RS232 {
         let mut buffer = String::new();
 
         for _ in 1..3 {
+            println!("Reading from port..");
             if let Ok(_) = self.read_line(&mut buffer) {
+                println!("Read from port: {}", buffer);
                 if buffer.len() >= 15 && buffer.starts_with("$G") &&
                     buffer.chars().nth(6) == Some(',')
                 {
                     return true;
+                } else {
+                    println!("Read from port: {}", buffer);
                 }
 
                 buffer.clear();
