@@ -61,7 +61,7 @@ impl RS232 {
 
         port.configure(&settings)?;
 
-        port.set_timeout(Duration::from_millis(1000))?;
+        port.set_timeout(Duration::from_millis(3_000))?;
 
         Ok(())
     }
