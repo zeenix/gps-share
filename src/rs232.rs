@@ -75,7 +75,7 @@ impl RS232 {
         let devices = enumerator.scan_devices()?;
         for d in devices {
             if let Some(driver) = d.parent().as_ref().and_then(|p| { p.driver() }) {
-                if driver != "pl2303" {
+                if driver != "pl2303" && driver != "cdc_acm" {
                     continue;
                 }
             }
