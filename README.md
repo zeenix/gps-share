@@ -98,3 +98,9 @@ To see all supported options and arguments, run:
 
 gps-share is licensed under GNU GPLv2+. Please refer to [LICENCE file](LICENSE)
 for details.
+
+## Hardware donations
+
+If you'd like some particular devices supported by gps-share, I do accept hardware
+donations. Please contact through email (on my github profile & git commits) to
+request my postal address to send the hardware to. Thanks.
