@@ -103,4 +103,13 @@ for details.
 
 If you'd like some particular devices supported by gps-share, I do accept hardware
 donations. Please contact through email (on my github profile & git commits) to
-request my postal address to send the hardware to. Thanks.
+request my postal address to send the hardware to. If you can send through DHL,
+use the following address[^1]:
+
+DHL customer: 904 538 947
+DHL Packstation 179
+Germany
+
+[^1] Please note that this address only works if you send through DHL.
+
+Thanks.
