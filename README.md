@@ -79,7 +79,7 @@ as simple as:
 Once built, binary is in `target/debug/gps-share`. If you want to build
 gps-share for production use, with all optimizations:
 
-    cargo --release build
+    cargo build --release
 
 which puts the binary in `target/release/gps-share`. You can also run the binary
 directly (without building first):
