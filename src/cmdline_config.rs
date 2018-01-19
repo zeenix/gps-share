@@ -50,7 +50,7 @@ pub fn config_from_cmdline() -> Config {
             Arg::with_name("interface")
                 .short("n")
                 .long("--network-interface")
-                .help("Bind specific network interface")
+                .help("Bind specific network interface (default: all)")
                 .takes_value(true)
                 .value_name("INTERFACE"),
         )
