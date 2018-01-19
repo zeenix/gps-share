@@ -66,8 +66,8 @@ gps-share is targetted specifically for Linux. It may or may not work on other
 POSIX hosts. Patches to add/fix support for non-Linux systems, are more than
 welcome.
 
-On Fedora, you might need to either disable selinux or configure it to allow
-gps-share to start and announce a TCP service.
+Remember to configure your firewall to allow your service to be reachable on the
+local network, as needed.
 
 ## Building from source
 
