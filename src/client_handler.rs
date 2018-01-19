@@ -22,7 +22,7 @@
  */
 
 use gps;
-use std::net::{TcpStream};
+use std::net::TcpStream;
 use std::io::Write;
 use std::sync::{Arc, Mutex};
 
@@ -32,10 +32,11 @@ pub struct ClientHandler {
 }
 
 impl ClientHandler {
-    pub fn new(gps:     Arc<Mutex<gps::GPS>>,
-               streams: Arc<Mutex<Vec<TcpStream>>>) -> Self {
-        ClientHandler { gps:      gps,
-                        streams:  streams }
+    pub fn new(gps: Arc<Mutex<gps::GPS>>, streams: Arc<Mutex<Vec<TcpStream>>>) -> Self {
+        ClientHandler {
+            gps: gps,
+            streams: streams,
+        }
     }
 
     pub fn handle(mut self) {
@@ -44,13 +45,13 @@ impl ClientHandler {
         loop {
             // unwrap cause we don't want a poisoned lock:
             // https://doc.rust-lang.org/std/sync/struct.Mutex.html#poisoning
-            if let Err(e) = self.gps.lock().unwrap().read_line(& mut buffer) {
-                println!("Failed to read from serial port: {}",  e);
+            if let Err(e) = self.gps.lock().unwrap().read_line(&mut buffer) {
+                println!("Failed to read from serial port: {}", e);
 
                 continue;
             }
 
-            let to_delete = self.write_to_clients(& buffer);
+            let to_delete = self.write_to_clients(&buffer);
             buffer.clear();
 
             // unwrap cause we don't want a poisoned lock:
@@ -66,8 +67,8 @@ impl ClientHandler {
         }
     }
 
-    fn write_to_clients(& mut self, buffer: & String) -> Vec<usize> {
-        let mut to_delete: Vec<usize> = vec!();
+    fn write_to_clients(&mut self, buffer: &String) -> Vec<usize> {
+        let mut to_delete: Vec<usize> = vec![];
 
         // unwrap cause we don't want a poisoned lock:
         // https://doc.rust-lang.org/std/sync/struct.Mutex.html#poisoning
@@ -80,9 +81,9 @@ impl ClientHandler {
                     to_delete.push(i);
 
                     continue;
-                },
+                }
 
-                Ok(_) => {},
+                Ok(_) => {}
 
                 Err(e) => {
                     println!("Failed to write NMEA to client: {}", e);

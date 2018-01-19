@@ -39,25 +39,27 @@ pub struct RS232 {
 impl RS232 {
     pub fn new(config: Rc<Config>) -> io::Result<Self> {
         match config.dev_path {
-            Some(ref path) => RS232::new_for_path(path.as_path(), & config),
-            None => RS232::new_detect(& config),
+            Some(ref path) => RS232::new_for_path(path.as_path(), &config),
+            None => RS232::new_detect(&config),
         }
     }
 
-    fn new_for_path(path: & Path, config: & Config) -> io::Result<Self> {
+    fn new_for_path(path: &Path, config: &Config) -> io::Result<Self> {
         let mut port = serial::open(path.as_os_str())?;
-        RS232::configure(& mut port as & mut serial::SerialPort, config)?;
+        RS232::configure(&mut port as &mut serial::SerialPort, config)?;
 
         Ok(RS232 { reader: BufReader::new(port) })
     }
 
-    fn configure(port: & mut serial::SerialPort, config: & Config) -> serial::Result<()> {
+    fn configure(port: &mut serial::SerialPort, config: &Config) -> serial::Result<()> {
         let baudrate = config.get_baudrate();
-        let settings = serial::PortSettings { baud_rate: baudrate,
-                                              char_size: serial::Bits8,
-                                              parity: serial::ParityNone,
-                                              stop_bits: serial::Stop1,
-                                              flow_control: serial::FlowNone, };
+        let settings = serial::PortSettings {
+            baud_rate: baudrate,
+            char_size: serial::Bits8,
+            parity: serial::ParityNone,
+            stop_bits: serial::Stop1,
+            flow_control: serial::FlowNone,
+        };
 
         port.configure(&settings)?;
 
@@ -66,7 +68,7 @@ impl RS232 {
         Ok(())
     }
 
-    fn new_detect(config: & Config) -> io::Result<Self> {
+    fn new_detect(config: &Config) -> io::Result<Self> {
         println!("Attempting to autodetect GPS device...");
         let context = libudev::Context::new()?;
         let mut enumerator = libudev::Enumerator::new(&context)?;
@@ -74,37 +76,40 @@ impl RS232 {
         enumerator.match_property("ID_BUS", "usb")?;
         let devices = enumerator.scan_devices()?;
         for d in devices {
-            if let Some(driver) = d.parent().as_ref().and_then(|p| { p.driver() }) {
+            if let Some(driver) = d.parent().as_ref().and_then(|p| p.driver()) {
                 if driver != "pl2303" && driver != "cdc_acm" {
                     continue;
                 }
             }
 
-            if let Some(p) = d.devnode().and_then(|devnode| { devnode.to_str() }) {
+            if let Some(p) = d.devnode().and_then(|devnode| devnode.to_str()) {
                 let path = Path::new(p);
 
-                match RS232::new_for_path(& path, config) {
+                match RS232::new_for_path(&path, config) {
                     Ok(mut gps) => {
                         if gps.verify() {
                             println!("Detected {} as a GPS device", p);
 
                             return Ok(gps);
                         }
-                    },
+                    }
 
                     Err(e) => println!("Error openning {}: {}", p, e),
                 }
             }
         }
 
-        Err(io::Error::new(io::ErrorKind::NotFound, "Failed to autodetect GPS device"))
+        Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            "Failed to autodetect GPS device",
+        ))
     }
 
-    fn verify(& mut self) -> bool {
+    fn verify(&mut self) -> bool {
         let mut buffer = String::new();
 
         for _ in 1..3 {
-            if let Ok(_) = self.read_line(& mut buffer) {
+            if let Ok(_) = self.read_line(&mut buffer) {
                 if buffer.starts_with("$GP") {
                     return true;
                 }
@@ -120,7 +125,7 @@ impl RS232 {
 }
 
 impl GPS for RS232 {
-    fn read_line(& mut self, buffer: & mut String) -> io::Result<usize> {
+    fn read_line(&mut self, buffer: &mut String) -> io::Result<usize> {
         self.reader.read_line(buffer)
     }
 }

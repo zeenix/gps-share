@@ -54,7 +54,7 @@ impl Avahi {
         Ok(Avahi { connection: connection })
     }
 
-    pub fn publish(&self, net_iface: Option<&str>, port: u16) -> Result<(),dbus::Error> {
+    pub fn publish(&self, net_iface: Option<&str>, port: u16) -> Result<(), dbus::Error> {
         let server: Server = Server::new("org.freedesktop.Avahi", "/", self.connection.clone());
         // FIXME: Make this async when it's possible
         let group_path = server.entry_group_new()?;
@@ -62,7 +62,7 @@ impl Avahi {
 
         let group = EntryGroup::new("org.freedesktop.Avahi", group_path, self.connection.clone());
         let txt = "accuracy=exact".to_string();
-        let array: Vec<Vec<u8>> = vec!(txt.into_bytes());
+        let array: Vec<Vec<u8>> = vec![txt.into_bytes()];
 
         let iface = match net_iface {
             Some(name) => {
@@ -74,10 +74,20 @@ impl Avahi {
                         -1
                     }
                 }
-            },
+            }
             None => -1,
         };
-        group.add_service(iface, -1, 0, "gps-share", "_nmea-0183._tcp", "", "", port, array)?;
+        group.add_service(
+            iface,
+            -1,
+            0,
+            "gps-share",
+            "_nmea-0183._tcp",
+            "",
+            "",
+            port,
+            array,
+        )?;
         group.commit()?;
 
         Ok(())

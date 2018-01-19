@@ -45,7 +45,7 @@ impl Server {
 
         let avahi = if config.announce_on_net {
             match avahi::Avahi::new() {
-                Ok(avahi) =>  Some(avahi),
+                Ok(avahi) => Some(avahi),
 
                 Err(e) => {
                     println!("Failed to connect to Avahi: {}", e);
@@ -57,13 +57,15 @@ impl Server {
             None
         };
 
-        Ok(Server { gps:      Arc::new(Mutex::new(gps)),
-                    listener: listener,
-                    avahi:    avahi,
-                    config:   config })
+        Ok(Server {
+            gps: Arc::new(Mutex::new(gps)),
+            listener: listener,
+            avahi: avahi,
+            config: config,
+        })
     }
 
-    pub fn run(& mut self) -> io::Result<()> {
+    pub fn run(&mut self) -> io::Result<()> {
         let addr = self.listener.local_addr()?;
         let port = addr.port();
         let config = &self.config;
@@ -81,7 +83,7 @@ impl Server {
             };
         };
 
-        let streams: Vec<TcpStream> = vec!();
+        let streams: Vec<TcpStream> = vec![];
         let streams_arc = Arc::new(Mutex::new(streams));
 
         loop {
@@ -101,11 +103,9 @@ impl Server {
                     if launch_handler {
                         let handler = ClientHandler::new(self.gps.clone(), streams_arc.clone());
 
-                        thread::spawn(move || {
-                            handler.handle();
-                        });
+                        thread::spawn(move || { handler.handle(); });
                     }
-                },
+                }
 
                 Err(e) => {
                     println!("Connect from client failed: {}", e);

@@ -35,7 +35,7 @@ impl StdinGPS {
 }
 
 impl GPS for StdinGPS {
-    fn read_line(& mut self, buffer: & mut String) -> io::Result<usize> {
+    fn read_line(&mut self, buffer: &mut String) -> io::Result<usize> {
         self.stdin.read_line(buffer)
     }
 }

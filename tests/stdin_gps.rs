@@ -48,10 +48,9 @@ fn test_stdin_gps_with_port_iface() {
 fn test_stdin_gps(tcp_port: Option<u16>, net_iface: Option<&str>) {
     let mut cmd = Command::new("target/debug/gps-share");
 
-    cmd.arg("-a")
-       .arg("-")
-       .stdin(Stdio::piped())
-       .stdout(Stdio::piped());
+    cmd.arg("-a").arg("-").stdin(Stdio::piped()).stdout(
+        Stdio::piped(),
+    );
     if let Some(port) = tcp_port {
         cmd.args(&["-p", &port.to_string()]);
     }
@@ -68,12 +67,12 @@ fn test_stdin_gps(tcp_port: Option<u16>, net_iface: Option<&str>) {
                       $GPRMC,122732.000,A,5744.4784,N,01201.6130,E,0.0,0.0,300417,,,A*63\n\
                       $GPGGA,122732.000,5744.4784,N,01201.6130,E,1,04,6.5,61.7,M,44.5,M,,0000*62\n";
 
-    write_nmea_to_child(& mut child, nmea_trace);
+    write_nmea_to_child(&mut child, nmea_trace);
 
-    let mut port = get_port(& mut child);
+    let mut port = get_port(&mut child);
     if port == 0 {
         std::thread::sleep(std::time::Duration::from_millis(100));
-        port = get_port(& mut child);
+        port = get_port(&mut child);
     }
     assert_ne!(port, 0);
     if let Some(p) = tcp_port {
@@ -87,7 +86,7 @@ fn test_stdin_gps(tcp_port: Option<u16>, net_iface: Option<&str>) {
     child.kill().unwrap();
 }
 
-fn write_nmea_to_child(child: & mut Child, nmea_trace: &str) {
+fn write_nmea_to_child(child: &mut Child, nmea_trace: &str) {
     if let Some(ref mut stdin) = child.stdin {
         let len = stdin.write(nmea_trace.as_ref()).unwrap();
 
@@ -95,12 +94,12 @@ fn write_nmea_to_child(child: & mut Child, nmea_trace: &str) {
     };
 }
 
-fn get_port(child: & mut Child) -> u16 {
-    let mut port:u16 = 0;
+fn get_port(child: &mut Child) -> u16 {
+    let mut port: u16 = 0;
     if let Some(ref mut stdout) = child.stdout {
         let mut output = [0u8; 1024];
 
-        let n = stdout.read(& mut output).unwrap();
+        let n = stdout.read(&mut output).unwrap();
         assert!(n > 0);
 
         let output = String::from_utf8(output.to_vec()).unwrap();
@@ -126,7 +125,7 @@ fn get_nmea_from_service(port: u16, trace_len: usize) -> String {
 
     let mut output = vec![0u8; trace_len];
 
-    stream.read_exact(& mut output[..]).unwrap();
+    stream.read_exact(&mut output[..]).unwrap();
 
     String::from_utf8(output).unwrap()
 }
