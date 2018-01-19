@@ -26,13 +26,8 @@ use std::io::Read;
 use std::net::TcpStream;
 
 #[test]
-fn test_stdin_gps_autoport() {
+fn test_stdin_gps_defaults() {
     test_stdin_gps(None, None);
-}
-
-#[test]
-fn test_stdin_gps_autoport_iface() {
-    test_stdin_gps(None, Some("lo"));
 }
 
 #[test]
@@ -42,7 +37,7 @@ fn test_stdin_gps_with_port() {
 
 #[test]
 fn test_stdin_gps_with_port_iface() {
-    test_stdin_gps(None, Some("lo"));
+    test_stdin_gps(Some(9315), Some("lo"));
 }
 
 fn test_stdin_gps(tcp_port: Option<u16>, net_iface: Option<&str>) {
