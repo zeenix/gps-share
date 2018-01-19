@@ -42,7 +42,7 @@ pub fn config_from_cmdline() -> Config {
             Arg::with_name("port")
                 .short("p")
                 .long("--port")
-                .help("Port to run TCP service on")
+                .help("Port to run TCP service on (default: 10110)")
                 .takes_value(true)
                 .value_name("PORT"),
         )
@@ -68,7 +68,7 @@ pub fn config_from_cmdline() -> Config {
     let dev_path = matches.value_of("device").and_then(|p| {
         Some(::std::path::PathBuf::from(p))
     });
-    let port: u16 = matches.value_of("port").unwrap_or("0").parse().unwrap_or(0);
+    let port: u16 = matches.value_of("port").unwrap_or("10110").parse().unwrap_or(0);
     let iface = matches.value_of("interface").map(|s| s.to_string());
     let baudrate = matches
         .value_of("baudrate")
