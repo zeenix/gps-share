@@ -26,8 +26,9 @@ Maps using gps-share on the fast train from Gothenburg to Stockholm")
 
 ## Dependencies
 
-While cargo manages the Rust crates gps-share depend on, you'll also need the
-following on your host:
+The developers use the latest rustc release and if you use an older version of
+the compiler, you may encounter issues. While cargo manages the Rust crates
+gps-share depend on, you'll also need the following on your host:
 
 * libdbus
 * libudev
