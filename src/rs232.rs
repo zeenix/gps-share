@@ -111,7 +111,7 @@ impl RS232 {
         for _ in 1..3 {
             if let Ok(_) = self.read_line(&mut buffer) {
                 if buffer.len() >= 15 && buffer.starts_with("$G") &&
-                    buffer.chars().nth(6).map(|c| c == ',').unwrap_or(false)
+                    buffer.chars().nth(6) == Some(',')
                 {
                     return true;
                 }
