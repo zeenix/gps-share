@@ -29,6 +29,7 @@ use std::time::Duration;
 use std::io;
 use std::io::BufReader;
 use std::io::BufRead;
+use std::io::Read;
 use std::rc::Rc;
 use std::path::Path;
 
@@ -111,21 +112,18 @@ impl RS232 {
     }
 
     fn verify(&mut self) -> bool {
-        let mut buffer = String::new();
+        let mut buffer = [0; 8];
 
-        for _ in 1..3 {
+        for _ in 0..3 {
             println!("Reading from port..");
-            if let Ok(_) = self.read_line(&mut buffer) {
-                println!("Read from port: {}", buffer);
-                if buffer.len() >= 15 && buffer.starts_with("$G") &&
-                    buffer.chars().nth(6) == Some(',')
+            if let Ok(n) = self.read(&mut buffer) {
+                println!("Read {} bytes from port. first byte: {}", n, buffer[0]);
+                if char::from(buffer[0]) == '$' &&
+                    char::from(buffer[1]) == 'G' &&
+                    char::from(buffer[6]) == ','
                 {
                     return true;
-                } else {
-                    println!("Read from port: {}", buffer);
                 }
-
-                buffer.clear();
             } else {
                 println!("Failed to read from serial port");
             }
@@ -138,5 +136,9 @@ impl RS232 {
 impl GPS for RS232 {
     fn read_line(&mut self, buffer: &mut String) -> io::Result<usize> {
         self.reader.read_line(buffer)
+    }
+
+    fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+        self.reader.read(buffer)
     }
 }

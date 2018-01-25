@@ -25,10 +25,15 @@ use std::io;
 
 pub trait GPS: Send + 'static {
     fn read_line(&mut self, buffer: &mut String) -> io::Result<usize>;
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize>;
 }
 
 impl<T: GPS + 'static + ?Sized> GPS for Box<T> {
     fn read_line(&mut self, buffer: &mut String) -> io::Result<usize> {
         (**self).read_line(buffer)
+    }
+
+    fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+        (**self).read(buffer)
     }
 }

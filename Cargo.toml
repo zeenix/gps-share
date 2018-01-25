@@ -10,7 +10,7 @@ repository = "https://github.com/zeenix/gps-share"
 description = "Utility to share your GPS device on local network"
 
 [dependencies]
-serial = "0.3"
+serial = "0.4"
 dbus = "^0.5"
 dbus-macros = { git = "https://github.com/antoyo/dbus-macros-rs", branch = "master" }
 chan = "0.1.19"

@@ -22,6 +22,7 @@
  */
 
 use std::io;
+use std::io::Read;
 use gps::GPS;
 
 pub struct StdinGPS {
@@ -37,5 +38,9 @@ impl StdinGPS {
 impl GPS for StdinGPS {
     fn read_line(&mut self, buffer: &mut String) -> io::Result<usize> {
         self.stdin.read_line(buffer)
+    }
+
+    fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+        self.stdin.read(buffer)
     }
 }
