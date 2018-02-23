@@ -1,6 +1,6 @@
 [package]
 name = "gps-share"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Zeeshan Ali <zeenix@gmail.com>"]
 categories = ["hardware-support", "command-line-utilities", "command-line-interface", "os::unix-apis"]
 keywords = ["serial", "hardware", "system", "RS232", "GPS", "avahi" ]

@@ -1,3 +1,18 @@
+0.2.0
+=====
+
+- Bump timeout to 3 seconds on reading RS232 devices. 1 seconds is too little
+  for some GPS devices, e.g NaviLock NL 602U.
+- Support devices belonging to USB CDC class (e.g NaviLock NL 602U).
+- Use port 10110 by default, the standard IANA nmea-0183 service port.
+- Support Galieo, BeiDou, GLONASS, and GNSS devices.
+
+All contributors:
+
+Daniel Aleksandersen <code@daniel.priv.no>
+Sebastian Dröge <sebastian@centricular.com>
+Zeeshan Ali <zeenix@gmail.com>
+
 0.1.0
 =====
 
