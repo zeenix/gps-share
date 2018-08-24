@@ -22,10 +22,10 @@
  */
 
 use libc;
-use std::ptr;
-use std::mem;
-use std::ffi::{CStr, CString};
 use serial;
+use std::ffi::{CStr, CString};
+use std::mem;
+use std::ptr;
 
 pub struct Config {
     pub dev_path: Option<::std::path::PathBuf>,
@@ -116,7 +116,6 @@ impl Config {
 
                     continue;
                 }
-
             }
         }
 

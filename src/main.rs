@@ -21,17 +21,17 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-mod rs232;
-mod gps;
-mod server;
 mod avahi;
 mod client_handler;
-mod stdin_gps;
-mod config;
 mod cmdline_config;
+mod config;
+mod gps;
+mod rs232;
+mod server;
+mod stdin_gps;
 
-extern crate serial;
 extern crate dbus;
+extern crate serial;
 #[macro_use]
 extern crate dbus_macros;
 extern crate core;
@@ -42,12 +42,12 @@ extern crate clap;
 extern crate libc;
 extern crate libudev;
 
+use config::Config;
 use gps::GPS;
 use rs232::RS232;
-use stdin_gps::StdinGPS;
 use server::Server;
-use config::Config;
 use std::thread;
+use stdin_gps::StdinGPS;
 
 use chan_signal::Signal;
 use std::rc::Rc;

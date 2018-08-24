@@ -21,8 +21,8 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use std::io;
 use gps::GPS;
+use std::io;
 
 pub struct StdinGPS {
     stdin: io::Stdin,

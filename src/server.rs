@@ -21,15 +21,15 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use gps;
 use avahi;
-use config::Config;
 use client_handler::ClientHandler;
+use config::Config;
+use gps;
 use std::io;
 use std::net::{TcpListener, TcpStream};
+use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::rc::Rc;
 
 pub struct Server {
     gps: Arc<Mutex<gps::GPS>>,
@@ -103,7 +103,9 @@ impl Server {
                     if launch_handler {
                         let handler = ClientHandler::new(self.gps.clone(), streams_arc.clone());
 
-                        thread::spawn(move || { handler.handle(); });
+                        thread::spawn(move || {
+                            handler.handle();
+                        });
                     }
                 }
 

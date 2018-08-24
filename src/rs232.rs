@@ -21,16 +21,16 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use gps::GPS;
 use config::Config;
-use serial;
+use gps::GPS;
 use libudev;
-use std::time::Duration;
+use serial;
 use std::io;
-use std::io::BufReader;
 use std::io::BufRead;
-use std::rc::Rc;
+use std::io::BufReader;
 use std::path::Path;
+use std::rc::Rc;
+use std::time::Duration;
 
 pub struct RS232 {
     reader: BufReader<serial::SystemPort>,
@@ -48,7 +48,9 @@ impl RS232 {
         let mut port = serial::open(path.as_os_str())?;
         RS232::configure(&mut port as &mut serial::SerialPort, config)?;
 
-        Ok(RS232 { reader: BufReader::new(port) })
+        Ok(RS232 {
+            reader: BufReader::new(port),
+        })
     }
 
     fn configure(port: &mut serial::SerialPort, config: &Config) -> serial::Result<()> {
@@ -110,9 +112,9 @@ impl RS232 {
 
         for _ in 1..3 {
             if let Ok(_) = self.read_line(&mut buffer) {
-                if buffer.len() >= 15 &&
-                    buffer.chars().nth(0) == Some('$') &&
-                    buffer.chars().nth(6) == Some(',')
+                if buffer.len() >= 15
+                    && buffer.chars().nth(0) == Some('$')
+                    && buffer.chars().nth(6) == Some(',')
                 {
                     return true;
                 }

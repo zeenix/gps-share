@@ -22,8 +22,8 @@
  */
 
 use gps;
-use std::net::TcpStream;
 use std::io::Write;
+use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 
 pub struct ClientHandler {

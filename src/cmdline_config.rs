@@ -21,7 +21,7 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use clap::{Arg, App};
+use clap::{App, Arg};
 use config::Config;
 
 pub fn config_from_cmdline() -> Config {
@@ -29,46 +29,47 @@ pub fn config_from_cmdline() -> Config {
         .version("0.1")
         .author("Zeeshan Ali <zeeshanak@gnome.org>")
         .about("Utility to share your GPS device on local network.")
-        .arg(Arg::with_name("device").help("GPS device node").required(
-            false,
-        ))
         .arg(
+            Arg::with_name("device")
+                .help("GPS device node")
+                .required(false),
+        ).arg(
             Arg::with_name("disable-announce")
                 .short("a")
                 .long("--disable-announce")
                 .help("Disable announcing through Avahi"),
-        )
-        .arg(
+        ).arg(
             Arg::with_name("port")
                 .short("p")
                 .long("--port")
                 .help("Port to run TCP service on (default: 10110)")
                 .takes_value(true)
                 .value_name("PORT"),
-        )
-        .arg(
+        ).arg(
             Arg::with_name("interface")
                 .short("n")
                 .long("--network-interface")
                 .help("Bind specific network interface (default: all)")
                 .takes_value(true)
                 .value_name("INTERFACE"),
-        )
-        .arg(
+        ).arg(
             Arg::with_name("baudrate")
                 .short("b")
                 .long("--baudrate")
                 .help("Baudrate to use for communication with GPS device")
                 .takes_value(true)
                 .value_name("BAUDRATE"),
-        )
-        .get_matches();
+        ).get_matches();
 
     let announce = !matches.is_present("disable-announce");
-    let dev_path = matches.value_of("device").and_then(|p| {
-        Some(::std::path::PathBuf::from(p))
-    });
-    let port: u16 = matches.value_of("port").unwrap_or("10110").parse().unwrap_or(0);
+    let dev_path = matches
+        .value_of("device")
+        .and_then(|p| Some(::std::path::PathBuf::from(p)));
+    let port: u16 = matches
+        .value_of("port")
+        .unwrap_or("10110")
+        .parse()
+        .unwrap_or(0);
     let iface = matches.value_of("interface").map(|s| s.to_string());
     let baudrate = matches
         .value_of("baudrate")

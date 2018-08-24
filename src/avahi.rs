@@ -51,7 +51,9 @@ impl Avahi {
         let c = dbus::Connection::get_private(dbus::BusType::System)?;
         let connection = Rc::new(c);
 
-        Ok(Avahi { connection: connection })
+        Ok(Avahi {
+            connection: connection,
+        })
     }
 
     pub fn publish(&self, net_iface: Option<&str>, port: u16) -> Result<(), dbus::Error> {
@@ -65,16 +67,14 @@ impl Avahi {
         let array: Vec<Vec<u8>> = vec![txt.into_bytes()];
 
         let iface = match net_iface {
-            Some(name) => {
-                match server.get_network_interface_index_by_name(name) {
-                    Ok(i) => i,
-                    Err(e) => {
-                        println!("Failed to get interface index from Avahi: {}", e);
+            Some(name) => match server.get_network_interface_index_by_name(name) {
+                Ok(i) => i,
+                Err(e) => {
+                    println!("Failed to get interface index from Avahi: {}", e);
 
-                        -1
-                    }
+                    -1
                 }
-            }
+            },
             None => -1,
         };
         group.add_service(

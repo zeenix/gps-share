@@ -20,10 +20,10 @@
  *
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
-use std::process::{Command, Stdio, Child};
-use std::io::Write;
 use std::io::Read;
+use std::io::Write;
 use std::net::TcpStream;
+use std::process::{Child, Command, Stdio};
 
 #[test]
 fn test_stdin_gps_defaults() {
@@ -43,9 +43,10 @@ fn test_stdin_gps_with_port_iface() {
 fn test_stdin_gps(tcp_port: Option<u16>, net_iface: Option<&str>) {
     let mut cmd = Command::new("target/debug/gps-share");
 
-    cmd.arg("-a").arg("-").stdin(Stdio::piped()).stdout(
-        Stdio::piped(),
-    );
+    cmd.arg("-a")
+        .arg("-")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped());
     if let Some(port) = tcp_port {
         cmd.args(&["-p", &port.to_string()]);
     }
