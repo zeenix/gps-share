@@ -94,7 +94,7 @@ impl Config {
                 libc::AF_INET6 => size = mem::size_of::<libc::sockaddr_in6>() as u32,
                 _ => continue,
             };
-            let host_ptr = host.into_raw() as *mut i8;
+            let host_ptr = host.into_raw() as *mut libc::c_char;
             let ret = libc::getnameinfo(
                 addr.ifa_addr,
                 size,
