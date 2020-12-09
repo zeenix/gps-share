@@ -27,6 +27,7 @@ mod cmdline_config;
 mod config;
 mod gps;
 mod rs232;
+mod gnss;
 mod server;
 mod stdin_gps;
 
@@ -45,6 +46,7 @@ extern crate libudev;
 use config::Config;
 use gps::GPS;
 use rs232::RS232;
+use gnss::GNSS;
 use server::Server;
 use std::thread;
 use stdin_gps::StdinGPS;
@@ -99,12 +101,22 @@ fn get_gps(config: Rc<Config>) -> Box<GPS> {
 
         Err(e) => {
             match e.kind() {
-                ::std::io::ErrorKind::NotFound => println!("{}", e),
+                ::std::io::ErrorKind::NotFound => match GNSS::new(config.clone()) {
+                    Ok(gnss) => return Box::new(gnss),
 
-                _ => println!("Failed to open serial device: {}", e),
+                    Err(e) => {
+                        match e.kind() {
+                            ::std::io::ErrorKind::NotFound => println!("{}", e),
+
+                            _ => println!("Failed to open GNSS device: {}", e),
+                        }
+
+                        std::process::exit(1);
+                    }
+                },
+
+                _ => {println!("Failed to open serial device: {}", e); std::process::exit(1)},
             }
-
-            std::process::exit(1);
         }
     }
 }
