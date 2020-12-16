@@ -53,6 +53,13 @@ pub fn config_from_cmdline() -> Config {
                 .takes_value(true)
                 .value_name("INTERFACE"),
         ).arg(
+            Arg::with_name("socket")
+                .short("s")
+                .long("--socket-path")
+                .help("Path to place the socket service (default: don't run)")
+                .takes_value(true)
+                .value_name("SOCKET"),
+        ).arg(
             Arg::with_name("baudrate")
                 .short("b")
                 .long("--baudrate")
@@ -71,6 +78,7 @@ pub fn config_from_cmdline() -> Config {
         .parse()
         .unwrap_or(0);
     let iface = matches.value_of("interface").map(|s| s.to_string());
+    let socket_path = matches.value_of("socket").map(|s| s.to_string());
     let baudrate = matches
         .value_of("baudrate")
         .unwrap_or("38400")
@@ -82,6 +90,7 @@ pub fn config_from_cmdline() -> Config {
         announce_on_net: announce,
         port: port,
         net_iface: iface,
+        socket_path: socket_path,
         baudrate: baudrate,
     }
 }
