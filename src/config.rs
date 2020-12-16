@@ -32,6 +32,7 @@ pub struct Config {
     pub announce_on_net: bool,
     pub port: u16,
     pub net_iface: Option<String>,
+    pub socket_path: Option<String>,
     pub baudrate: usize,
 }
 
