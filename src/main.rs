@@ -96,6 +96,8 @@ fn get_gps(config: Rc<Config>) -> Box<GPS> {
         }
     }
 
+    // FIXME: the discovery part should be separated from the RS232 module so that adding
+    //  more devices doesn't get even more convoluted.
     match RS232::new(config.clone()) {
         Ok(rs232) => return Box::new(rs232),
 
