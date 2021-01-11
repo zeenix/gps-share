@@ -21,6 +21,7 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
+use ::{dbus_interface, dbus_prototypes};
 use dbus;
 use std::rc::Rc;
 

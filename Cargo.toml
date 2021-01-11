@@ -12,7 +12,6 @@ description = "Utility to share your GPS device on local network"
 [dependencies]
 serial = "0.3"
 dbus = "^0.5"
-dbus-macros = "0.2.3"
 chan = "0.1.19"
 chan-signal = "0.2.0"
 clap = "2.23.1"

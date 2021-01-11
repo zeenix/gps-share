@@ -25,6 +25,8 @@ mod avahi;
 mod client_handler;
 mod cmdline_config;
 mod config;
+#[macro_use]
+mod dbus_macros;
 mod gps;
 mod rs232;
 mod gnss;
@@ -33,8 +35,6 @@ mod stdin_gps;
 
 extern crate dbus;
 extern crate serial;
-#[macro_use]
-extern crate dbus_macros;
 extern crate core;
 #[macro_use]
 extern crate chan;
