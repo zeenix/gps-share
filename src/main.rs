@@ -89,7 +89,7 @@ fn run(_sdone: chan::Sender<()>, config: Rc<Config>) {
     run_server_handle_err(gps, config.clone());
 }
 
-fn get_gps(config: Rc<Config>) -> Box<GPS> {
+fn get_gps(config: Rc<Config>) -> Box<dyn GPS> {
     if let Some(ref path) = config.dev_path {
         if path.to_str() == Some("-") {
             return Box::new(StdinGPS::new());
@@ -123,7 +123,7 @@ fn get_gps(config: Rc<Config>) -> Box<GPS> {
     }
 }
 
-fn run_server_handle_err(gps: Box<GPS>, config: Rc<Config>) {
+fn run_server_handle_err(gps: Box<dyn GPS>, config: Rc<Config>) {
     if let Err(e) = run_server(gps, config) {
         println!("Failed to start TCP service: {}", e);
 
@@ -131,7 +131,7 @@ fn run_server_handle_err(gps: Box<GPS>, config: Rc<Config>) {
     }
 }
 
-fn run_server(gps: Box<GPS>, config: Rc<Config>) -> ::std::io::Result<()> {
+fn run_server(gps: Box<dyn GPS>, config: Rc<Config>) -> ::std::io::Result<()> {
     let mut server = Server::new(gps, config)?;
 
     server.run()

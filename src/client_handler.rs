@@ -27,12 +27,12 @@ use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 
 pub struct ClientHandler {
-    gps: Arc<Mutex<gps::GPS>>,
+    gps: Arc<Mutex<dyn gps::GPS>>,
     streams: Arc<Mutex<Vec<TcpStream>>>,
 }
 
 impl ClientHandler {
-    pub fn new(gps: Arc<Mutex<gps::GPS>>, streams: Arc<Mutex<Vec<TcpStream>>>) -> Self {
+    pub fn new(gps: Arc<Mutex<dyn gps::GPS>>, streams: Arc<Mutex<Vec<TcpStream>>>) -> Self {
         ClientHandler {
             gps: gps,
             streams: streams,

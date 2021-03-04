@@ -46,14 +46,14 @@ impl RS232 {
 
     fn new_for_path(path: &Path, config: &Config) -> io::Result<Self> {
         let mut port = serial::open(path.as_os_str())?;
-        RS232::configure(&mut port as &mut serial::SerialPort, config)?;
+        RS232::configure(&mut port as &mut dyn serial::SerialPort, config)?;
 
         Ok(RS232 {
             reader: BufReader::new(port),
         })
     }
 
-    fn configure(port: &mut serial::SerialPort, config: &Config) -> serial::Result<()> {
+    fn configure(port: &mut dyn serial::SerialPort, config: &Config) -> serial::Result<()> {
         let baudrate = config.get_baudrate();
         let settings = serial::PortSettings {
             baud_rate: baudrate,
