@@ -36,57 +36,75 @@ extern crate serial;
 #[macro_use]
 extern crate dbus_macros;
 extern crate core;
-#[macro_use]
-extern crate chan;
-extern crate chan_signal;
 extern crate clap;
 extern crate libc;
 extern crate libudev;
+extern crate signal_hook;
+
 
 use config::Config;
 use gps::GPS;
 use rs232::RS232;
 use gnss::GNSS;
 use server::Server;
+use signal_hook as signals;
+use std::io;
+use std::sync::mpsc;
 use std::thread;
 use stdin_gps::StdinGPS;
 
-use chan_signal::Signal;
 use std::rc::Rc;
+
+
+enum DoneReason {
+    Signal(i32),
+    Success,
+}
+
+/// Stolen directly from crate chan-signal.
+fn notify(signals: &[i32], s: mpsc::Sender<DoneReason>) -> Result<(), io::Error> {
+    let signals = signal_hook::iterator::Signals::new(signals)?;
+    thread::spawn(move || {
+        for signal in signals.forever() {
+            if s.send(DoneReason::Signal(signal)).is_err() {
+                break;
+            }
+        }
+    });
+    Ok(())
+}
+
 
 fn main() {
     let config = cmdline_config::config_from_cmdline();
 
-    let signal = chan_signal::notify(&[Signal::INT, Signal::TERM]);
-    let (sdone, rdone) = chan::sync(0);
+    let (sdone, rdone) = mpsc::channel();
+    notify(&[signals::SIGINT, signals::SIGTERM], sdone.clone()).unwrap();
 
     thread::spawn(move || run(sdone, Rc::new(config)));
 
-    chan_select! {
-        signal.recv() -> signal => {
-            match signal {
-                Some(Signal::INT) => {
-                    println!("Interrupt from keyboard. Exitting..");
-                },
-
-                Some(Signal::TERM) => {
-                    println!("Kill signal received. Exitting..");
-                },
-
-                _ => (),
-            }
+    match rdone.recv().unwrap() {
+        DoneReason::Signal(signals::SIGINT) => {
+            println!("Interrupt from keyboard. Exitting..");
         },
 
-        rdone.recv() => {
+        DoneReason::Signal(signals::SIGTERM) => {
+            println!("Kill signal received. Exitting..");
+        },
+
+        DoneReason::Signal(_) => (),
+
+        DoneReason::Success => {
             println!("Program completed normally.");
-        }
-    }
+        },
+    };
 }
 
-fn run(_sdone: chan::Sender<()>, config: Rc<Config>) {
+fn run(sdone: mpsc::Sender<DoneReason>, config: Rc<Config>) {
     let gps = get_gps(config.clone());
 
     run_server_handle_err(gps, config.clone());
+    sdone.send(DoneReason::Success).unwrap();
 }
 
 fn get_gps(config: Rc<Config>) -> Box<GPS> {
