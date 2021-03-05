@@ -34,7 +34,7 @@ use std::thread;
 
 pub struct Server {
     gps: Arc<Mutex<dyn gps::GPS>>,
-    tcp_listener: Option<TcpListener>,
+    tcp_listener: Option<Arc<Mutex<TcpListener>>>,
     unix_listener: Option<Arc<Mutex<UnixListener>>>,
     avahi: Option<avahi::Avahi>,
     config: Rc<Config>,
@@ -46,7 +46,7 @@ impl Server {
         let tcp_listener = if config.no_tcp {
             None
         } else {
-            Some(TcpListener::bind((ip.as_str(), config.port))?)
+            Some(Arc::new(Mutex::new(TcpListener::bind((ip.as_str(), config.port))?)))
         };
 
         let path = &config.socket_path;
@@ -118,8 +118,11 @@ impl Server {
             })
         });
 
-        if let Some(listener) = &self.tcp_listener {
-            let addr = listener.local_addr()?;
+        let tcp_thread: Option<Result<_, io::Error>> = self.tcp_listener.as_ref().map(|listener| {
+            let addr = {
+                let listener = listener.lock().unwrap();
+                listener.local_addr()
+            }?;
             let port = addr.port();
 
             match config.net_iface {
@@ -132,52 +135,61 @@ impl Server {
                 let iface = config.net_iface.as_ref().map(|i| i.as_str());
 
                 if let Err(e) = avahi.publish(iface, port) {
-                    println!("Failed to publish service on Avahi: {}", e);
+                    eprintln!("Failed to publish service on Avahi: {}", e);
                 };
             };
 
-            loop {
-                match listener.accept() {
-                    Ok((stream, addr)) => {
-                        println!("Connection from {}", addr.ip());
+            let listener = listener.clone();
+            let streams_arc = streams_arc.clone();
+            let gps = self.gps.clone();
+            Ok(thread::spawn(move || {
+                let listener = listener.lock().unwrap();
+                loop {
+                    match listener.accept() {
+                        Ok((stream, addr)) => {
+                            println!("Connection from {}", addr.ip());
+                            let launch_handler;
+                            {
+                                // unwrap cause we don't want a poisoned lock:
+                                // https://doc.rust-lang.org/std/sync/struct.Mutex.html#poisoning
+                                let mut streams = streams_arc.lock().unwrap();
+                                streams.push(Stream::Tcp(stream));
+                                launch_handler = streams.len() == 1;
+                            }
 
-                        let launch_handler;
-                        {
-                            // unwrap cause we don't want a poisoned lock:
-                            // https://doc.rust-lang.org/std/sync/struct.Mutex.html#poisoning
-                            let mut streams = streams_arc.lock().unwrap();
-                            streams.push(Stream::Tcp(stream));
-                            launch_handler = streams.len() == 1;
-                        }
+                            if launch_handler {
+                                let handler = ClientHandler::new(gps.clone(), streams_arc.clone());
 
-                        if launch_handler {
-                            let handler = ClientHandler::new(self.gps.clone(), streams_arc.clone());
-
-                            thread::spawn(move || {
-                                handler.handle();
-                            });
-                        }
-                    }
-
-                    Err(e) => {
-                        println!("Connect from client failed: {}", e);
+                                thread::spawn(move || {
+                                    handler.handle();
+                                });
+                            }
+                        },
+                        Err(e) => {
+                            eprintln!("Connect from client failed: {}", e);
+                        },
                     }
                 }
-            }
-        }
+            }))
+        });
 
+        // This method must never exit, so it must block on one of the joins.
         if let Some(thread) = unix_thread {
-            // Will never happen as long as the thread is infinite,
-            // but it's going to help if that changes.
             match thread.join() {
                 Ok(_) => {},
                 Err(e) => eprintln!("Unix socket thread failed: {:?}", e),
             }
-        } else {
-            // This can be hit when the TCP socket stops serving (so never),
-            // or when the TCP socket is not even requested.
-            panic!("Can't share: no mechanism configured");
         }
-        panic!("Sharing ended");
+        
+        if let Some(thread) = tcp_thread {
+            match thread?.join() {
+                Ok(_) => {},
+                Err(e) => eprintln!("TCP socket thread failed: {:?}", e),
+            }
+        }
+
+        // This can be hit when the TCP socket stops serving (so never),
+        // or when the TCP socket is not even requested.
+        panic!("Sharing ended or not configured");
     }
 }
