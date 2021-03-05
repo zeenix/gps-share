@@ -22,17 +22,34 @@
  */
 
 use gps;
+use std::io;
 use std::io::Write;
 use std::net::TcpStream;
+use std::os::unix::net::UnixStream;
 use std::sync::{Arc, Mutex};
+
+
+pub enum Stream {
+    Tcp(TcpStream),
+    Unix(UnixStream),
+}
+
+impl Stream {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        match self {
+            Stream::Tcp(s) => s.write(buf),
+            Stream::Unix(s) => s.write(buf),
+        }
+    }
+}
 
 pub struct ClientHandler {
     gps: Arc<Mutex<dyn gps::GPS>>,
-    streams: Arc<Mutex<Vec<TcpStream>>>,
+    streams: Arc<Mutex<Vec<Stream>>>,
 }
 
 impl ClientHandler {
-    pub fn new(gps: Arc<Mutex<dyn gps::GPS>>, streams: Arc<Mutex<Vec<TcpStream>>>) -> Self {
+    pub fn new(gps: Arc<Mutex<dyn gps::GPS>>, streams: Arc<Mutex<Vec<Stream>>>) -> Self {
         ClientHandler {
             gps: gps,
             streams: streams,
@@ -72,9 +89,9 @@ impl ClientHandler {
 
         // unwrap cause we don't want a poisoned lock:
         // https://doc.rust-lang.org/std/sync/struct.Mutex.html#poisoning
-        let streams = self.streams.lock().unwrap();
+        let mut streams = self.streams.lock().unwrap();
         for i in 0..streams.len() {
-            let mut stream = &streams[i];
+            let stream = &mut streams[i];
 
             match stream.write(buffer.as_bytes()) {
                 Ok(0) => {
