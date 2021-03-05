@@ -32,7 +32,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 pub struct Server {
-    gps: Arc<Mutex<gps::GPS>>,
+    gps: Arc<Mutex<dyn gps::GPS>>,
     listener: TcpListener,
     avahi: Option<avahi::Avahi>,
     config: Rc<Config>,
