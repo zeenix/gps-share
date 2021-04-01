@@ -31,16 +31,15 @@ mod gnss;
 mod server;
 mod stdin_gps;
 
-extern crate dbus;
 extern crate serial;
-#[macro_use]
-extern crate dbus_macros;
+
 extern crate core;
 extern crate clap;
 extern crate libc;
 extern crate libudev;
 extern crate signal_hook;
-
+extern crate zbus;
+extern crate zvariant;
 
 use config::Config;
 use gps::GPS;

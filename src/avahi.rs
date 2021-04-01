@@ -21,48 +21,62 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use dbus;
 use std::rc::Rc;
+use zbus;
+use zbus::dbus_proxy;
+use zvariant::OwnedObjectPath;
 
-dbus_interface!("org.freedesktop.Avahi.Server", interface Server {
-    fn entry_group_new() -> dbus::Path;
-    fn get_network_interface_index_by_name(name: &str) -> i32;
-});
+#[dbus_proxy(
+    interface = "org.freedesktop.Avahi.Server",
+    default_service = "org.freedesktop.Avahi",
+    default_path = "/",
+)]
+trait Server {
+    fn entry_group_new(&self) -> zbus::Result<OwnedObjectPath>;
+    fn get_network_interface_index_by_name(&self, name: &str) -> zbus::Result<i32>;
+}
 
-dbus_interface!("org.freedesktop.Avahi.EntryGroup", interface EntryGroup {
-    fn add_service(ifindex: i32,
-                   protocol: i32,
-                   flags: u32,
-                   name: &str,
-                   service_type: &str,
-                   domain: &str,
-                   host: &str,
-                   port: u16,
-                   text: Vec<Vec<u8>>);
-    fn commit();
-});
+#[dbus_proxy(
+    interface = "org.freedesktop.Avahi.EntryGroup",
+    default_path = "/",
+)]
+trait EntryGroup {
+    fn add_service(&self,
+        ifindex: i32,
+        protocol: i32,
+        flags: u32,
+        name: &str,
+        service_type: &str,
+        domain: &str,
+        host: &str,
+        port: u16,
+        text: Vec<Vec<u8>>
+    ) -> zbus::Result<()>;
+    fn commit(&self) -> zbus::Result<()>;
+}
 
 pub struct Avahi {
-    connection: Rc<dbus::Connection>,
+    connection: Rc<zbus::Connection>,
 }
 
 impl Avahi {
-    pub fn new() -> Result<Self, dbus::Error> {
-        let c = dbus::Connection::get_private(dbus::BusType::System)?;
-        let connection = Rc::new(c);
+    pub fn new() -> Result<Self, zbus::Error> {
+        let connection = zbus::Connection::new_system()?;
+        let connection = Rc::new(connection);
 
         Ok(Avahi {
             connection: connection,
         })
     }
 
-    pub fn publish(&self, net_iface: Option<&str>, port: u16) -> Result<(), dbus::Error> {
-        let server: Server = Server::new("org.freedesktop.Avahi", "/", self.connection.clone());
+    pub fn publish(&self, net_iface: Option<&str>, port: u16) -> Result<(), zbus::Error> {
+        let server = ServerProxy::new(&self.connection.clone())?;
+        
         // FIXME: Make this async when it's possible
         let group_path = server.entry_group_new()?;
-        println!("group: {}", group_path);
+        println!("group: {}", group_path.as_str());
 
-        let group = EntryGroup::new("org.freedesktop.Avahi", group_path, self.connection.clone());
+        let group = EntryGroupProxy::new_for(&self.connection.clone(), "org.freedesktop.Avahi", &group_path)?;
         let txt = "accuracy=exact".to_string();
         let array: Vec<Vec<u8>> = vec![txt.into_bytes()];
 
