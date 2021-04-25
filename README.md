@@ -97,8 +97,7 @@ To see all supported options and arguments, run:
 
 ## Testing
 
-The test suite includes end-to-end tests.
-They share sockets, and should be run in a serial manner:
+The test suite includes end-to-end tests. They share sockets, and should be run in a serial manner:
 
     cargo test -- --test-threads=1
 
