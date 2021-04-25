@@ -6,13 +6,14 @@ Git master build status: [![Build Status](https://travis-ci.org/zeenix/gps-share
 
 ## Goals
 
-gps-share has two goals:
+gps-share has the following goals:
 
 * Share your GPS device on the local network so that all machines in your home
   or office can make use of it.
 * Enable support for standalone (i-e not part of a cellular modem) GPS devices
   in Geoclue. Since Geoclue has been able to make use of network NMEA sources
   since 2015, gps-share works out of the box with Geoclue.
+* Enable multiple applications to share the GPS stream on the same machine.
 
 The latter means that it is a replacement for
 [GPSD](https://en.wikipedia.org/wiki/Gpsd) and
@@ -30,10 +31,7 @@ The developers use the latest rustc release and if you use an older version of
 the compiler, you may encounter issues. While cargo manages the Rust crates
 gps-share depend on, you'll also need the following on your host:
 
-* libdbus
 * libudev
-* libcap
-* xz-libs
 
 ## Supported devices
 
