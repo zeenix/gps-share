@@ -20,27 +20,46 @@
  *
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
+use std::fs;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
+use std::os::unix::net::{UnixStream};
 use std::process::{Child, Command, Stdio};
+
+
+enum LocalSocket {
+    Only(&'static str),
+    Some(&'static str),
+    None,
+}
 
 #[test]
 fn test_stdin_gps_defaults() {
-    test_stdin_gps(None, None);
+    test_stdin_gps(None, None, LocalSocket::None);
 }
 
 #[test]
 fn test_stdin_gps_with_port() {
-    test_stdin_gps(Some(9314), None);
+    test_stdin_gps(Some(9314), None, LocalSocket::None);
 }
 
 #[test]
 fn test_stdin_gps_with_port_iface() {
-    test_stdin_gps(Some(9315), Some("lo"));
+    test_stdin_gps(Some(9315), Some("lo"), LocalSocket::None);
 }
 
-fn test_stdin_gps(tcp_port: Option<u16>, net_iface: Option<&str>) {
+#[test]
+fn test_stdin_gps_local_only() {
+    test_stdin_gps(None, None, LocalSocket::Only("/tmp/sock"));
+}
+
+#[test]
+fn test_stdin_gps_local_defaults() {
+    test_stdin_gps(None, None, LocalSocket::Some("/tmp/sock"));
+}
+
+fn test_stdin_gps(tcp_port: Option<u16>, net_iface: Option<&str>, local_socket: LocalSocket) {
     let mut cmd = Command::new("target/debug/gps-share");
 
     cmd.arg("-a")
@@ -52,6 +71,15 @@ fn test_stdin_gps(tcp_port: Option<u16>, net_iface: Option<&str>) {
     }
     if let Some(iface) = net_iface {
         cmd.args(&["-n", iface]);
+    }
+    match &local_socket {
+        LocalSocket::Only(path) => {
+            cmd.args(&["--no-tcp", "--socket-path", path]);
+        },
+        LocalSocket::Some(path) => {
+            cmd.args(&["--socket-path", path]);
+        },
+        LocalSocket::None => {},
     }
 
     let mut child = cmd.spawn().expect("Failed to start gps-share");
@@ -65,21 +93,39 @@ fn test_stdin_gps(tcp_port: Option<u16>, net_iface: Option<&str>) {
 
     write_nmea_to_child(&mut child, nmea_trace);
 
-    let mut port = get_port(&mut child);
-    if port == 0 {
-        std::thread::sleep(std::time::Duration::from_millis(100));
-        port = get_port(&mut child);
-    }
-    assert_ne!(port, 0);
-    if let Some(p) = tcp_port {
-        assert!(port == p);
-    }
-    println!("Port is {}", port);
+    let port_wanted = match &local_socket {
+        LocalSocket::Only(_) => false,
+        _ => true,
+    };
 
-    let trace = get_nmea_from_service(port, nmea_trace.len());
-    assert_eq!(trace, nmea_trace);
+    if port_wanted {
+        let child_port = get_port_from_child(&mut child);
+        if let Some(port) = child_port {
+            if let Some(requested_port) = tcp_port {
+                assert_eq!(port, requested_port);
+            }
+            let trace = get_nmea_from_port(port, nmea_trace.len());
+            assert_eq!(trace, nmea_trace);
+        }
+    }
+
+    let local_path = match &local_socket {
+        LocalSocket::Only(path) => Some(path),
+        LocalSocket::Some(path) => Some(path),
+        _ => None,
+    };
+    
+    // Read from the local socket
+    // if data hasn't already been read from the network.
+    if let LocalSocket::Only(path) = local_socket {
+        let trace = get_nmea_from_local(path, nmea_trace.len());
+        assert_eq!(trace, nmea_trace);
+    }
 
     child.kill().unwrap();
+    if let Some(path) = local_path {
+        fs::remove_file(path).unwrap();
+    }
 }
 
 fn write_nmea_to_child(child: &mut Child, nmea_trace: &str) {
@@ -90,38 +136,52 @@ fn write_nmea_to_child(child: &mut Child, nmea_trace: &str) {
     };
 }
 
-fn get_port(child: &mut Child) -> u16 {
-    let mut port: u16 = 0;
-    if let Some(ref mut stdout) = child.stdout {
-        let mut output = [0u8; 1024];
+fn get_port_from_child(mut child: &mut Child) -> Option<u16> {
+    let mut port = get_port(&mut child);
+    if port.is_none() {
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        port = get_port(&mut child);
+    }
+    port
+}
 
-        let n = stdout.read(&mut output).unwrap();
-        assert!(n > 0);
+fn get_port(child: &mut Child) -> Option<u16> {
+    let mut port = None;
+    let stdout = child.stdout.as_mut().unwrap();
+    let mut output = [0u8; 1024];
 
-        let output = String::from_utf8(output.to_vec()).unwrap();
+    stdout.read(&mut output).unwrap();
 
-        for line in output.split("\n") {
-            if let Some(port_str) = line.split(" ").nth(1) {
-                port = u16::from_str_radix(port_str, 10).unwrap_or(0);
+    let output = String::from_utf8(output.to_vec()).unwrap();
 
-                if port > 0 {
-                    break;
-                }
+    for line in output.split("\n") {
+        if let Some(port_str) = line.split(" ").nth(1) {
+            port = u16::from_str_radix(port_str, 10).ok();
+
+            if port.is_some() {
+                break;
             }
         }
-    } else {
-        panic!();
     }
 
     port
 }
 
-fn get_nmea_from_service(port: u16, trace_len: usize) -> String {
+fn get_nmea_from_port(port: u16, trace_len: usize) -> String {
     let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
 
     let mut output = vec![0u8; trace_len];
 
     stream.read_exact(&mut output[..]).unwrap();
 
+    String::from_utf8(output).unwrap()
+}
+
+fn get_nmea_from_local(path: &str, trace_len: usize) -> String {
+    std::thread::sleep(std::time::Duration::from_millis(200));
+    let mut stream = UnixStream::connect(path).unwrap();
+    let mut output = vec![0u8; trace_len];
+
+    stream.read_exact(&mut output[..]).unwrap();
     String::from_utf8(output).unwrap()
 }
