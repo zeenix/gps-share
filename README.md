@@ -95,6 +95,13 @@ To see all supported options and arguments, run:
 
     cargo run -- --help
 
+## Testing
+
+The test suite includes end-to-end tests.
+They share sockets, and should be run in a serial manner:
+
+    cargo test -- --test-threads=1
+
 ## License
 
 gps-share is licensed under GNU GPLv2+. Please refer to [LICENCE file](LICENSE)
