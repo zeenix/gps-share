@@ -35,27 +35,18 @@ enum LocalSocket {
 }
 
 #[test]
-fn test_stdin_gps_defaults() {
+fn stdin_gps() {
+    // Just with default options.
     test_stdin_gps(None, None, LocalSocket::None);
-}
 
-#[test]
-fn test_stdin_gps_with_port() {
+    // With TCP port specified.
     test_stdin_gps(Some(9314), None, LocalSocket::None);
-}
-
-#[test]
-fn test_stdin_gps_with_port_iface() {
+    // With TCP port and interface specified.
     test_stdin_gps(Some(9315), Some("lo"), LocalSocket::None);
-}
 
-#[test]
-fn test_stdin_gps_local_only() {
+    // Local only.
     test_stdin_gps(None, None, LocalSocket::Only("/tmp/sock"));
-}
-
-#[test]
-fn test_stdin_gps_local_defaults() {
+    // Local with defaults.
     test_stdin_gps(None, None, LocalSocket::Some("/tmp/sock"));
 }
 

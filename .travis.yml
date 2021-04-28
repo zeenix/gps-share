@@ -8,7 +8,7 @@ branches:
 
 script:
   - cargo build --verbose
-  - cargo test --verbose -- --test-threads=1
+  - cargo test --verbose
 
 addons:
   apt:

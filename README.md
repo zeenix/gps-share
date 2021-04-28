@@ -119,7 +119,7 @@ The `device` is either the path to the relevant GNSS device, of `-` for standard
 
 The test suite includes end-to-end tests. They share sockets, and should be run in a serial manner:
 
-    cargo test -- --test-threads=1
+    cargo test
 
 ## License
 
