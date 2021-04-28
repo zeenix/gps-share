@@ -6,6 +6,10 @@ branches:
     except:
         - /^wip\/.*/
 
+script:
+  - cargo build --verbose
+  - cargo test --verbose -- --test-threads=1
+
 addons:
   apt:
     packages:
