@@ -93,6 +93,28 @@ To see all supported options and arguments, run:
 
     cargo run -- --help
 
+## Command-line usage
+
+The general call to gps-share is the following:
+
+    gps-share [FLAGS] [OPTIONS] [device]
+
+The `device` is either the path to the relevant GNSS device, of `-` for standard input.
+
+### Options
+
+- `-b, --baudrate <BAUDRATE>` Baudrate to use for communication with GPS device
+- `-n, --network-interface <INTERFACE>` Place the listening TCP socket on specific network interface (default: all)
+- `-p, --port <PORT>` Port to run TCP service on (default: 10110)
+- `-s, --socket-path <SOCKET>` Listen on a local socket with the specified path (default: don't listen on a local socket)
+
+### Flags
+
+- `-a, --disable-announce` Disable announcing through Avahi
+- `-h, --help` Prints help information
+- `-x, --no-tcp` Don't listen on TCP sockets at all
+- `-V, --version` Prints version information
+
 ## Testing
 
 The test suite includes end-to-end tests. They share sockets, and should be run in a serial manner:
