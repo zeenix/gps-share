@@ -1,7 +1,11 @@
 [package]
 name = "gps-share"
 version = "0.2.0"
-authors = ["Zeeshan Ali <zeenix@gmail.com>"]
+authors = [
+    "Zeeshan Ali <zeenix@gmail.com>",
+    "Dorota Czaplejewicz <dorota.czaplejewicz@puri.sm>",
+    "Angus Ainslie <angus@akkea.ca>",
+]
 categories = ["hardware-support", "command-line-utilities", "command-line-interface", "os::unix-apis"]
 keywords = ["serial", "hardware", "system", "RS232", "GPS", "avahi" ]
 license = "GPL-2.0+"
