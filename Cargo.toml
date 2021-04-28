@@ -7,7 +7,7 @@ authors = [
     "Angus Ainslie <angus@akkea.ca>",
 ]
 categories = ["hardware-support", "command-line-utilities", "command-line-interface", "os::unix-apis"]
-keywords = ["serial", "hardware", "system", "RS232", "GPS", "avahi" ]
+keywords = ["serial", "hardware", "system", "RS232", "GPS"]
 license = "GPL-2.0+"
 readme = "README.md"
 repository = "https://github.com/zeenix/gps-share"
