@@ -26,7 +26,7 @@ use config::Config;
 
 pub fn config_from_cmdline() -> Config {
     let matches = App::new("GPS Share")
-        .version("0.1")
+        .version(env!("CARGO_PKG_VERSION"))
         .author("Zeeshan Ali <zeeshanak@gnome.org>")
         .about("Utility to share your GPS device on local network.")
         .arg(
