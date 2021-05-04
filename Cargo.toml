@@ -1,6 +1,6 @@
 [package]
 name = "gps-share"
-version = "0.3.0"
+version = "0.3.1"
 authors = [
     "Zeeshan Ali <zeenix@gmail.com>",
     "Dorota Czaplejewicz <dorota.czaplejewicz@puri.sm>",
