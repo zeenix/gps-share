@@ -51,7 +51,7 @@ fn stdin_gps() {
 }
 
 fn test_stdin_gps(tcp_port: Option<u16>, net_iface: Option<&str>, local_socket: LocalSocket) {
-    let mut cmd = Command::new("target/debug/gps-share");
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_gps-share"));
 
     cmd.arg("-a")
         .arg("-")
