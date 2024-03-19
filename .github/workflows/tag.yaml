@@ -1,0 +1,48 @@
+name: Build and Publish Release
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libdbus-1-dev
+          git submodule foreach git pull origin master
+
+      - name: Build
+        run: cargo build --release --verbose
+
+      - name: Archive build result
+        uses: actions/upload-artifact@v4
+        with:
+          name: gps-share
+          path: target/release/*
+
+      - name: Create Release
+        id: release
+        uses: spenserblack/actions-tag-to-release@main
+
+      - name: Upload binaries to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/release/gps-share
+          asset_name: gps-share
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: ${{ steps.release.outputs.body }}
+          release_name: ${{ steps.release.outputs.title }}

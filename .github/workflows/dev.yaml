@@ -1,0 +1,34 @@
+name: Build and Publish Development
+on:
+  push:
+    branches-ignore:
+      - '*wip*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install libudev-dev libdbus-1-dev
+          git submodule foreach git pull origin master
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Test
+        run: cargo test --verbose
+
+      - name: Archive build result
+        uses: actions/upload-artifact@v4
+        with:
+          name: gps-share-debug
+          path: target/debug/*
