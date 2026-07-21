@@ -26,8 +26,8 @@ use client_handler::{ClientHandler, Stream};
 use config::Config;
 use gps;
 use std::io;
-use std::net::{TcpListener};
-use std::os::unix::net::{UnixListener};
+use std::net::TcpListener;
+use std::os::unix::net::UnixListener;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -46,7 +46,10 @@ impl Server {
         let tcp_listener = if config.no_tcp {
             None
         } else {
-            Some(Arc::new(Mutex::new(TcpListener::bind((ip.as_str(), config.port))?)))
+            Some(Arc::new(Mutex::new(TcpListener::bind((
+                ip.as_str(),
+                config.port,
+            ))?)))
         };
 
         let path = &config.socket_path;
@@ -109,10 +112,10 @@ impl Server {
                                     handler.handle();
                                 });
                             }
-                        },
+                        }
                         Err(e) => {
                             eprintln!("Local socket failed to accept connection: {}", e);
-                        },
+                        }
                     }
                 }
             })
@@ -164,10 +167,10 @@ impl Server {
                                     handler.handle();
                                 });
                             }
-                        },
+                        }
                         Err(e) => {
                             eprintln!("Connect from client failed: {}", e);
-                        },
+                        }
                     }
                 }
             }))
@@ -176,14 +179,14 @@ impl Server {
         // This method must never exit, so it must block on one of the joins.
         if let Some(thread) = unix_thread {
             match thread.join() {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => eprintln!("Unix socket thread failed: {:?}", e),
             }
         }
-        
+
         if let Some(thread) = tcp_thread {
             match thread?.join() {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => eprintln!("TCP socket thread failed: {:?}", e),
             }
         }

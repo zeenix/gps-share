@@ -25,13 +25,13 @@
 use config::Config;
 use gps::GPS;
 use libudev;
+use std::fs;
+use std::fs::File;
+use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::path::Path;
 use std::rc::Rc;
-use std::fs::File;
-use std::fs;
-use std::io;
 
 pub struct GNSS {
     reader: BufReader<fs::File>,

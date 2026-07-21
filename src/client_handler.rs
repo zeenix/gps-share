@@ -28,7 +28,6 @@ use std::net::TcpStream;
 use std::os::unix::net::UnixStream;
 use std::sync::{Arc, Mutex};
 
-
 pub enum Stream {
     Tcp(TcpStream),
     Unix(UnixStream),

@@ -29,19 +29,17 @@ use zvariant::OwnedObjectPath;
 #[dbus_proxy(
     interface = "org.freedesktop.Avahi.Server",
     default_service = "org.freedesktop.Avahi",
-    default_path = "/",
+    default_path = "/"
 )]
 trait Server {
     fn entry_group_new(&self) -> zbus::Result<OwnedObjectPath>;
     fn get_network_interface_index_by_name(&self, name: &str) -> zbus::Result<i32>;
 }
 
-#[dbus_proxy(
-    interface = "org.freedesktop.Avahi.EntryGroup",
-    default_path = "/",
-)]
+#[dbus_proxy(interface = "org.freedesktop.Avahi.EntryGroup", default_path = "/")]
 trait EntryGroup {
-    fn add_service(&self,
+    fn add_service(
+        &self,
         ifindex: i32,
         protocol: i32,
         flags: u32,
@@ -50,7 +48,7 @@ trait EntryGroup {
         domain: &str,
         host: &str,
         port: u16,
-        text: Vec<Vec<u8>>
+        text: Vec<Vec<u8>>,
     ) -> zbus::Result<()>;
     fn commit(&self) -> zbus::Result<()>;
 }
@@ -71,12 +69,16 @@ impl Avahi {
 
     pub fn publish(&self, net_iface: Option<&str>, port: u16) -> Result<(), zbus::Error> {
         let server = ServerProxy::new(&self.connection.clone())?;
-        
+
         // FIXME: Make this async when it's possible
         let group_path = server.entry_group_new()?;
         println!("group: {}", group_path.as_str());
 
-        let group = EntryGroupProxy::new_for(&self.connection.clone(), "org.freedesktop.Avahi", &group_path)?;
+        let group = EntryGroupProxy::new_for(
+            &self.connection.clone(),
+            "org.freedesktop.Avahi",
+            &group_path,
+        )?;
         let txt = "accuracy=exact".to_string();
         let array: Vec<Vec<u8>> = vec![txt.into_bytes()];
 

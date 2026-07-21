@@ -33,45 +33,52 @@ pub fn config_from_cmdline() -> Config {
             Arg::with_name("device")
                 .help("GPS device node")
                 .required(false),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("disable-announce")
                 .short("a")
                 .long("--disable-announce")
                 .help("Disable announcing through Avahi"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("port")
                 .short("p")
                 .long("--port")
                 .help("Port to run TCP service on (default: 10110)")
                 .takes_value(true)
                 .value_name("PORT"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("interface")
                 .short("n")
                 .long("--network-interface")
                 .help("Bind specific network interface (default: all)")
                 .takes_value(true)
                 .value_name("INTERFACE"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("no-tcp")
                 .short("x")
                 .long("--no-tcp")
                 .help("Don't share over TCP"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("socket")
                 .short("s")
                 .long("--socket-path")
                 .help("Path to place the socket service (default: don't run)")
                 .takes_value(true)
                 .value_name("SOCKET"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("baudrate")
                 .short("b")
                 .long("--baudrate")
                 .help("Baudrate to use for communication with GPS device")
                 .takes_value(true)
                 .value_name("BAUDRATE"),
-        ).get_matches();
+        )
+        .get_matches();
 
     let announce = !matches.is_present("disable-announce");
     let dev_path = matches
