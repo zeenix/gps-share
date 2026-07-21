@@ -21,7 +21,7 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use gps;
+use crate::gps;
 use std::io;
 use std::io::Write;
 use std::net::TcpStream;

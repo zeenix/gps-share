@@ -21,90 +21,83 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use clap::{App, Arg};
-use config::Config;
+use crate::config::Config;
+use clap::{Arg, ArgAction, Command, value_parser};
 
 pub fn config_from_cmdline() -> Config {
-    let matches = App::new("GPS Share")
+    let matches = Command::new("GPS Share")
         .version(env!("CARGO_PKG_VERSION"))
         .author("Zeeshan Ali <zeeshanak@gnome.org>")
         .about("Utility to share your GPS device on local network.")
         .arg(
-            Arg::with_name("device")
+            Arg::new("device")
                 .help("GPS device node")
-                .required(false),
+                .required(false)
+                .value_parser(value_parser!(std::path::PathBuf)),
         )
         .arg(
-            Arg::with_name("disable-announce")
-                .short("a")
-                .long("--disable-announce")
+            Arg::new("disable-announce")
+                .short('a')
+                .long("disable-announce")
+                .action(ArgAction::SetTrue)
                 .help("Disable announcing through Avahi"),
         )
         .arg(
-            Arg::with_name("port")
-                .short("p")
-                .long("--port")
-                .help("Port to run TCP service on (default: 10110)")
-                .takes_value(true)
-                .value_name("PORT"),
+            Arg::new("port")
+                .short('p')
+                .long("port")
+                .help("Port to run TCP service on")
+                .value_name("PORT")
+                .default_value("10110")
+                .value_parser(value_parser!(u16)),
         )
         .arg(
-            Arg::with_name("interface")
-                .short("n")
-                .long("--network-interface")
+            Arg::new("interface")
+                .short('n')
+                .long("network-interface")
                 .help("Bind specific network interface (default: all)")
-                .takes_value(true)
                 .value_name("INTERFACE"),
         )
         .arg(
-            Arg::with_name("no-tcp")
-                .short("x")
-                .long("--no-tcp")
+            Arg::new("no-tcp")
+                .short('x')
+                .long("no-tcp")
+                .action(ArgAction::SetTrue)
                 .help("Don't share over TCP"),
         )
         .arg(
-            Arg::with_name("socket")
-                .short("s")
-                .long("--socket-path")
+            Arg::new("socket")
+                .short('s')
+                .long("socket-path")
                 .help("Path to place the socket service (default: don't run)")
-                .takes_value(true)
                 .value_name("SOCKET"),
         )
         .arg(
-            Arg::with_name("baudrate")
-                .short("b")
-                .long("--baudrate")
+            Arg::new("baudrate")
+                .short('b')
+                .long("baudrate")
                 .help("Baudrate to use for communication with GPS device")
-                .takes_value(true)
-                .value_name("BAUDRATE"),
+                .value_name("BAUDRATE")
+                .default_value("38400")
+                .value_parser(value_parser!(u32)),
         )
         .get_matches();
 
-    let announce = !matches.is_present("disable-announce");
-    let dev_path = matches
-        .value_of("device")
-        .and_then(|p| Some(::std::path::PathBuf::from(p)));
-    let port: u16 = matches
-        .value_of("port")
-        .unwrap_or("10110")
-        .parse()
-        .unwrap_or(0);
-    let no_tcp = matches.is_present("no-tcp");
-    let iface = matches.value_of("interface").map(|s| s.to_string());
-    let socket_path = matches.value_of("socket").map(|s| s.to_string());
-    let baudrate = matches
-        .value_of("baudrate")
-        .unwrap_or("38400")
-        .parse()
-        .unwrap_or(38400usize);
+    let announce = !matches.get_flag("disable-announce");
+    let dev_path = matches.get_one::<std::path::PathBuf>("device").cloned();
+    let port = *matches.get_one::<u16>("port").expect("has a default");
+    let no_tcp = matches.get_flag("no-tcp");
+    let iface = matches.get_one::<String>("interface").cloned();
+    let socket_path = matches.get_one::<String>("socket").cloned();
+    let baudrate = *matches.get_one::<u32>("baudrate").expect("has a default");
 
     Config {
-        dev_path: dev_path,
+        dev_path,
         announce_on_net: announce,
-        port: port,
+        port,
         net_iface: iface,
-        no_tcp: no_tcp,
-        socket_path: socket_path,
-        baudrate: baudrate,
+        no_tcp,
+        socket_path,
+        baudrate,
     }
 }

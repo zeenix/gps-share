@@ -21,10 +21,9 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use config::Config;
-use gps::GPS;
-use libudev;
-use serial;
+use crate::config::Config;
+use crate::gps::GPS;
+use serialport::{DataBits, FlowControl, Parity, SerialPort, StopBits};
 use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
@@ -33,7 +32,7 @@ use std::rc::Rc;
 use std::time::Duration;
 
 pub struct RS232 {
-    reader: BufReader<serial::SystemPort>,
+    reader: BufReader<Box<dyn SerialPort>>,
 }
 
 impl RS232 {
@@ -45,35 +44,22 @@ impl RS232 {
     }
 
     fn new_for_path(path: &Path, config: &Config) -> io::Result<Self> {
-        let mut port = serial::open(path.as_os_str())?;
-        RS232::configure(&mut port as &mut dyn serial::SerialPort, config)?;
+        let port = serialport::new(path.to_string_lossy(), config.baudrate)
+            .data_bits(DataBits::Eight)
+            .parity(Parity::None)
+            .stop_bits(StopBits::One)
+            .flow_control(FlowControl::None)
+            .timeout(Duration::from_millis(3_000))
+            .open()?;
 
         Ok(RS232 {
             reader: BufReader::new(port),
         })
     }
 
-    fn configure(port: &mut dyn serial::SerialPort, config: &Config) -> serial::Result<()> {
-        let baudrate = config.get_baudrate();
-        let settings = serial::PortSettings {
-            baud_rate: baudrate,
-            char_size: serial::Bits8,
-            parity: serial::ParityNone,
-            stop_bits: serial::Stop1,
-            flow_control: serial::FlowNone,
-        };
-
-        port.configure(&settings)?;
-
-        port.set_timeout(Duration::from_millis(3_000))?;
-
-        Ok(())
-    }
-
     fn new_detect(config: &Config) -> io::Result<Self> {
         println!("Attempting to autodetect GPS device...");
-        let context = libudev::Context::new()?;
-        let mut enumerator = libudev::Enumerator::new(&context)?;
+        let mut enumerator = udev::Enumerator::new()?;
         enumerator.match_subsystem("tty")?;
         enumerator.match_property("ID_BUS", "usb")?;
         let devices = enumerator.scan_devices()?;

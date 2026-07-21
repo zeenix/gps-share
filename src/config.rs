@@ -21,63 +21,49 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use libc;
-use serial;
-use std::ffi::{CStr, CString};
+use std::ffi::CStr;
 use std::mem;
+use std::path::PathBuf;
 use std::ptr;
 
 pub struct Config {
-    pub dev_path: Option<::std::path::PathBuf>,
+    pub dev_path: Option<PathBuf>,
     pub announce_on_net: bool,
     pub port: u16,
     pub net_iface: Option<String>,
     pub no_tcp: bool,
     pub socket_path: Option<String>,
-    pub baudrate: usize,
+    pub baudrate: u32,
 }
 
 impl Config {
     pub fn get_ip(&self) -> String {
         match self.net_iface {
-            Some(ref iface) => unsafe { Config::get_ip_for_iface(iface) },
+            Some(ref iface) => Config::get_ip_for_iface(iface),
 
             None => "0.0.0.0".to_string(),
         }
     }
 
-    pub fn get_baudrate(&self) -> serial::BaudRate {
-        match self.baudrate {
-            110 => serial::Baud110,
-            300 => serial::Baud300,
-            600 => serial::Baud600,
-            1200 => serial::Baud1200,
-            2400 => serial::Baud2400,
-            4800 => serial::Baud4800,
-            9600 => serial::Baud9600,
-            19200 => serial::Baud19200,
-            38400 => serial::Baud38400,
-            57600 => serial::Baud57600,
-            115200 => serial::Baud115200,
-            b => serial::BaudOther(b),
-        }
-    }
-
-    unsafe fn get_ip_for_iface(iface: &String) -> String {
+    fn get_ip_for_iface(iface: &str) -> String {
         let mut addr_ptr = ptr::null_mut();
 
-        let ret = libc::getifaddrs(&mut addr_ptr);
+        // SAFETY: `getifaddrs` only writes the list head into `addr_ptr`, which points at a valid
+        // local variable.
+        let ret = unsafe { libc::getifaddrs(&mut addr_ptr) };
         if ret != 0 || addr_ptr.is_null() {
             return "0.0.0.0".to_string();
         }
 
         while !addr_ptr.is_null() {
-            let addr = *addr_ptr;
+            // SAFETY: `addr_ptr` is non-null and points at an entry of the list `getifaddrs`
+            // returned, which stays alive for the whole walk.
+            let addr = unsafe { *addr_ptr };
             addr_ptr = addr.ifa_next;
 
-            let name;
-            match CStr::from_ptr(addr.ifa_name).to_str() {
-                Ok(n) => name = n,
+            // SAFETY: `ifa_name` is a NUL-terminated string owned by the entry above.
+            let name = match unsafe { CStr::from_ptr(addr.ifa_name) }.to_str() {
+                Ok(n) => n,
                 Err(e) => {
                     println!("{}", e);
 
@@ -85,34 +71,38 @@ impl Config {
                 }
             };
 
-            if name != iface.as_str() || addr.ifa_addr.is_null() {
+            if name != iface || addr.ifa_addr.is_null() {
                 continue;
             }
 
-            let mut host = CString::from_vec_unchecked(vec![0u8; libc::NI_MAXHOST as usize]);
-            let size;
-            match i32::from((*addr.ifa_addr).sa_family) {
-                libc::AF_INET => size = mem::size_of::<libc::sockaddr_in>() as u32,
-                libc::AF_INET6 => size = mem::size_of::<libc::sockaddr_in6>() as u32,
+            // SAFETY: `ifa_addr` was checked for NULL above and points at a `sockaddr`.
+            let size = match i32::from(unsafe { (*addr.ifa_addr).sa_family }) {
+                libc::AF_INET => mem::size_of::<libc::sockaddr_in>() as u32,
+                libc::AF_INET6 => mem::size_of::<libc::sockaddr_in6>() as u32,
                 _ => continue,
             };
-            let host_ptr = host.into_raw() as *mut libc::c_char;
-            let ret = libc::getnameinfo(
-                addr.ifa_addr,
-                size,
-                host_ptr,
-                libc::NI_MAXHOST,
-                ptr::null_mut(),
-                0,
-                libc::NI_NUMERICHOST,
-            );
-            host = CString::from_raw(host_ptr);
+            let mut host = vec![0u8; libc::NI_MAXHOST as usize];
+            // SAFETY: `addr.ifa_addr` describes `size` bytes of address and `host` provides the
+            // `NI_MAXHOST` bytes of output space we claim it does.
+            let ret = unsafe {
+                libc::getnameinfo(
+                    addr.ifa_addr,
+                    size,
+                    host.as_mut_ptr() as *mut libc::c_char,
+                    libc::NI_MAXHOST,
+                    ptr::null_mut(),
+                    0,
+                    libc::NI_NUMERICHOST,
+                )
+            };
             if ret != 0 {
                 return "0.0.0.0".to_string();
             }
 
-            match host.into_string() {
-                Ok(ip) => return ip,
+            // SAFETY: on success `getnameinfo` leaves a NUL-terminated string in `host`.
+            let host = unsafe { CStr::from_ptr(host.as_ptr() as *const libc::c_char) };
+            match host.to_str() {
+                Ok(ip) => return ip.to_string(),
                 Err(e) => {
                     println!("{}", e);
 

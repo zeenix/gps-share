@@ -22,9 +22,8 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use config::Config;
-use gps::GPS;
-use libudev;
+use crate::config::Config;
+use crate::gps::GPS;
 use std::fs;
 use std::fs::File;
 use std::io;
@@ -55,8 +54,7 @@ impl GNSS {
 
     fn new_detect() -> io::Result<Self> {
         println!("Attempting to autodetect GNSS device...");
-        let context = libudev::Context::new()?;
-        let mut enumerator = libudev::Enumerator::new(&context)?;
+        let mut enumerator = udev::Enumerator::new()?;
         enumerator.match_subsystem("gnss")?;
         let devices = enumerator.scan_devices()?;
         for d in devices {

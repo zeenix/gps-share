@@ -21,22 +21,24 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use std::rc::Rc;
-use zbus;
-use zbus::dbus_proxy;
-use zvariant::OwnedObjectPath;
+use zbus::{blocking::Connection, proxy, zvariant::OwnedObjectPath};
 
-#[dbus_proxy(
+#[proxy(
     interface = "org.freedesktop.Avahi.Server",
     default_service = "org.freedesktop.Avahi",
-    default_path = "/"
+    default_path = "/",
+    gen_async = false
 )]
 trait Server {
     fn entry_group_new(&self) -> zbus::Result<OwnedObjectPath>;
     fn get_network_interface_index_by_name(&self, name: &str) -> zbus::Result<i32>;
 }
 
-#[dbus_proxy(interface = "org.freedesktop.Avahi.EntryGroup", default_path = "/")]
+#[proxy(
+    interface = "org.freedesktop.Avahi.EntryGroup",
+    default_service = "org.freedesktop.Avahi",
+    gen_async = false
+)]
 trait EntryGroup {
     fn add_service(
         &self,
@@ -54,31 +56,26 @@ trait EntryGroup {
 }
 
 pub struct Avahi {
-    connection: Rc<zbus::Connection>,
+    connection: Connection,
 }
 
 impl Avahi {
     pub fn new() -> Result<Self, zbus::Error> {
-        let connection = zbus::Connection::new_system()?;
-        let connection = Rc::new(connection);
+        let connection = Connection::system()?;
 
-        Ok(Avahi {
-            connection: connection,
-        })
+        Ok(Avahi { connection })
     }
 
     pub fn publish(&self, net_iface: Option<&str>, port: u16) -> Result<(), zbus::Error> {
-        let server = ServerProxy::new(&self.connection.clone())?;
+        let server = ServerProxy::new(&self.connection)?;
 
         // FIXME: Make this async when it's possible
         let group_path = server.entry_group_new()?;
         println!("group: {}", group_path.as_str());
 
-        let group = EntryGroupProxy::new_for(
-            &self.connection.clone(),
-            "org.freedesktop.Avahi",
-            &group_path,
-        )?;
+        let group = EntryGroupProxy::builder(&self.connection)
+            .path(group_path)?
+            .build()?;
         let txt = "accuracy=exact".to_string();
         let array: Vec<Vec<u8>> = vec![txt.into_bytes()];
 

@@ -21,7 +21,7 @@
  * Author: Zeeshan Ali <zeeshanak@gnome.org>
  */
 
-use gps::GPS;
+use crate::gps::GPS;
 use std::io;
 
 pub struct StdinGPS {

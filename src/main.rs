@@ -31,26 +31,16 @@ mod rs232;
 mod server;
 mod stdin_gps;
 
-extern crate serial;
-
-extern crate clap;
-extern crate core;
-extern crate libc;
-extern crate libudev;
-extern crate signal_hook;
-extern crate zbus;
-extern crate zvariant;
-
-use config::Config;
-use gnss::GNSS;
-use gps::GPS;
-use rs232::RS232;
-use server::Server;
-use signal_hook as signals;
+use crate::config::Config;
+use crate::gnss::GNSS;
+use crate::gps::GPS;
+use crate::rs232::RS232;
+use crate::server::Server;
+use crate::stdin_gps::StdinGPS;
+use signal_hook::consts as signals;
 use std::io;
 use std::sync::mpsc;
 use std::thread;
-use stdin_gps::StdinGPS;
 
 use std::rc::Rc;
 
@@ -61,7 +51,7 @@ enum DoneReason {
 
 /// Stolen directly from crate chan-signal.
 fn notify(signals: &[i32], s: mpsc::Sender<DoneReason>) -> Result<(), io::Error> {
-    let signals = signal_hook::iterator::Signals::new(signals)?;
+    let mut signals = signal_hook::iterator::Signals::new(signals)?;
     thread::spawn(move || {
         for signal in signals.forever() {
             if s.send(DoneReason::Signal(signal)).is_err() {
